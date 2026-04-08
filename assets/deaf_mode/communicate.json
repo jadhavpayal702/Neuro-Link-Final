@@ -1,0 +1,7 @@
+{
+  "messages": [
+    {"sender": "Sarah", "message": "Hey! How are you?", "time": "10:30 AM", "isUser": false},
+    {"sender": "You", "message": "I'm doing great! Thanks for asking 😊", "time": "10:32 AM", "isUser": true},
+    {"sender": "Sarah", "message": "Want to meet up later?", "time": "10:33 AM", "isUser": false}
+  ]
+}

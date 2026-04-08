@@ -1,0 +1,10 @@
+{
+  "games": [
+    {"title": "Memory", "subtitle": "Visual memory training", "level": "Easy", "points": 300, "emoji": "🧠"},
+    {"title": "Sign Match", "subtitle": "Match signs quickly", "level": "Hard", "points": 420, "emoji": "🤟"},
+    {"title": "Pattern Puzzle", "subtitle": "Complete visual sequences", "level": "Hard", "points": 500, "emoji": "🧩"},
+    {"title": "Color Match", "subtitle": "Fast-paced color matching", "level": "Easy", "points": 200, "emoji": "🎨"},
+    {"title": "Shape Shifter", "subtitle": "Rotate and fit shapes", "level": "Medium", "points": 350, "emoji": "🔷"},
+    {"title": "Word Builder", "subtitle": "Build words from letters", "level": "Medium", "points": 400, "emoji": "✍️"}
+  ]
+}

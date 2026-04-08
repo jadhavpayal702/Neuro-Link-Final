@@ -1,0 +1,8 @@
+{
+  "devices": [
+    {"name": "Living Room Light", "room": "Living Room", "icon": "💡", "on": true},
+    {"name": "Bedroom Fan", "room": "Bedroom", "icon": "🌀", "on": false},
+    {"name": "Smart TV", "room": "Living Room", "icon": "📺", "on": true},
+    {"name": "Front Door", "room": "Entrance", "icon": "🚪", "on": false}
+  ]
+}

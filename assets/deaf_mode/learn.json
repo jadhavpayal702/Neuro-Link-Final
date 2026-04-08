@@ -1,0 +1,13 @@
+{
+  "courses": [
+    {"id": "sign", "title": "Sign Language Basics", "lessons": 12, "progress": 0.75, "icon": "🤟"},
+    {"id": "read", "title": "Reading & Comprehension", "lessons": 8, "progress": 0.45, "icon": "📖"},
+    {"id": "visual", "title": "Visual Communication", "lessons": 15, "progress": 0.60, "icon": "👀"},
+    {"id": "tech", "title": "Technology Skills", "lessons": 10, "progress": 0.30, "icon": "💻"}
+  ],
+  "videos": [
+    {"title": "Introduction to ASL", "duration": "12:30", "thumbnail": "🎬", "captions": true},
+    {"title": "Daily Conversations", "duration": "15:45", "thumbnail": "💬", "captions": true},
+    {"title": "Numbers and Time", "duration": "10:20", "thumbnail": "🔢", "captions": true}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "rooms": [
+    {"title": "ASL Learning Circle", "description": "Practice sign language together", "members": 248, "online": 42, "emoji": "🤟"},
+    {"title": "Deaf Tech Enthusiasts", "description": "Latest in assistive technology", "members": 156, "online": 18, "emoji": "💻"},
+    {"title": "Visual Art Community", "description": "Share and create visual art", "members": 389, "online": 67, "emoji": "🎨"},
+    {"title": "Daily Life Support", "description": "Support and advice", "members": 512, "online": 93, "emoji": "💬"}
+  ]
+}
