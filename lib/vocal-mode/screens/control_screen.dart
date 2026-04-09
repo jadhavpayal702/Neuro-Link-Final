@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import '../vocal_navigation.dart';
 import '../widgets/vocal_sub_header.dart';
@@ -12,10 +13,27 @@ class ControlScreen extends StatefulWidget {
 }
 
 class _ControlScreenState extends State<ControlScreen> {
+  static const String espIp = "http://172.20.10.2"; // ESP32 IP
+
   bool _lightOn = true;
   bool _fanOn = false;
   bool _tvOn = true;
   bool _coffeeOn = false;
+
+  Future<void> sendCommand(bool isOn) async {
+    try {
+      final url = isOn ? "$espIp/on" : "$espIp/off";
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        debugPrint("ESP Response: ${response.body}");
+      } else {
+        debugPrint("ESP connection failed");
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +89,10 @@ class _ControlScreenState extends State<ControlScreen> {
               _DeviceRow(
                 name: 'Living Room Light',
                 statusOn: _lightOn,
-                onChanged: (v) => setState(() => _lightOn = v),
+                onChanged: (v) async {
+                  setState(() => _lightOn = v);
+                  await sendCommand(v);
+                },
                 icon: Icons.lightbulb_rounded,
                 iconBg: const Color(0xFF14B8A6),
               ),

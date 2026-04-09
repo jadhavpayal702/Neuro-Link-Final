@@ -4,7 +4,8 @@ import 'package:provider/provider.dart';
 import '../controllers/deaf_ui_controller.dart';
 import '../widgets/deaf_theme.dart';
 import '../widgets/quick_actions.dart';
-import 'lesson_screen.dart';
+import '../data/learn_data.dart';
+import 'course_detail_screen.dart';
 
 class LearnScreen extends StatelessWidget {
   const LearnScreen({super.key});
@@ -113,11 +114,18 @@ class LearnScreen extends StatelessWidget {
                 SizedBox(
                   height: 40,
                   child: GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => LessonScreen(title: course.title),
-                      ),
-                    ),
+                    onTap: () {
+                      final allData = LearnData.getAllCourses();
+                      final courseData = allData.firstWhere(
+                        (c) => c.title == course.title,
+                        orElse: () => allData.first,
+                      );
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => CourseDetailScreen(course: courseData),
+                        ),
+                      );
+                    },
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: DeafTheme.topGradient,
@@ -127,7 +135,7 @@ class LearnScreen extends StatelessWidget {
                         horizontal: 20,
                         vertical: 10,
                       ),
-                      child: Text(
+                      child: const Text(
                         'Continue',
                         style: TextStyle(
                           fontSize: 15,
@@ -142,56 +150,6 @@ class LearnScreen extends StatelessWidget {
             ),
           ),
         ),
-
-        // const SizedBox(height: 8),
-        // const Text(
-        //   'Captioned Videos',
-        //   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        // ),
-        // const SizedBox(height: 8),
-        // ...c.videos.map(
-        //   (video) => Container(
-        //     margin: const EdgeInsets.only(bottom: 10),
-        //     padding: const EdgeInsets.all(12),
-        //     decoration: BoxDecoration(
-        //       color: Colors.white,
-        //       borderRadius: BorderRadius.circular(16),
-        //     ),
-        //     child: Row(
-        //       children: [
-        //         Container(
-        //           width: 62,
-        //           height: 62,
-        //           decoration: BoxDecoration(
-        //             color: DeafTheme.orangeA,
-        //             borderRadius: BorderRadius.circular(12),
-        //           ),
-        //           alignment: Alignment.center,
-        //           child: Text(
-        //             video.thumbnail,
-        //             style: const TextStyle(fontSize: 28),
-        //           ),
-        //         ),
-        //         const SizedBox(width: 10),
-        //         Expanded(
-        //           child: Column(
-        //             crossAxisAlignment: CrossAxisAlignment.start,
-        //             children: [
-        //               Text(
-        //                 video.title,
-        //                 style: const TextStyle(fontWeight: FontWeight.w700),
-        //               ),
-        //               Text('Duration: ${video.duration}'),
-        //               if (video.captions) const Text('CC   🤟 Sign'),
-        //             ],
-        //           ),
-        //         ),
-        //         const Icon(Icons.play_arrow_rounded, color: DeafTheme.orangeA),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-        //const SizedBox(height: 10),
         const QuickActions(),
       ],
     );

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 import '../controllers/deaf_ui_controller.dart';
 import '../widgets/deaf_theme.dart';
+
+const String espIp = "http://172.20.10.2"; // replace with your ESP IP
 
 class ControlScreen extends StatelessWidget {
   const ControlScreen({super.key});
@@ -131,10 +134,23 @@ class ControlScreen extends StatelessWidget {
                   activeColor: DeafTheme.orangeA,
                   inactiveThumbColor: Colors.grey.shade300,
                   inactiveTrackColor: Colors.grey.shade300,
-
                   value: d.on,
-                  onChanged: (v) =>
-                      context.read<DeafUiController>().toggleDevice(i, v),
+                  onChanged: (v) async {
+                    context.read<DeafUiController>().toggleDevice(i, v);
+
+                    try {
+                      final url = v ? "$espIp/on" : "$espIp/off";
+                      final response = await http.get(Uri.parse(url));
+
+                      if (response.statusCode == 200) {
+                        debugPrint("ESP Response: ${response.body}");
+                      } else {
+                        debugPrint("Failed to connect to ESP32");
+                      }
+                    } catch (e) {
+                      debugPrint("Error: $e");
+                    }
+                  },
                 ),
               ],
             ),
