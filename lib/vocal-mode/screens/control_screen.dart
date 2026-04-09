@@ -48,10 +48,7 @@ class _ControlScreenState extends State<ControlScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          '🎤',
-                          style: TextStyle(fontSize: 22),
-                        ),
+                        Text('🎤', style: TextStyle(fontSize: 22)),
                         const SizedBox(width: 10),
                         const Text(
                           'Try these voice commands:',
@@ -106,11 +103,7 @@ class _ControlScreenState extends State<ControlScreen> {
               ),
             ],
           ),
-          const Positioned(
-            right: 18,
-            bottom: 18,
-            child: VocalEmergencyFab(),
-          ),
+          const Positioned(right: 18, bottom: 18, child: VocalEmergencyFab()),
         ],
       ),
     );

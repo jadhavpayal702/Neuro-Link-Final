@@ -8,8 +8,8 @@ class NeurobotController extends ChangeNotifier {
   NeurobotController({
     required AiService aiService,
     required TtsService ttsService,
-  })  : _aiService = aiService,
-        _ttsService = ttsService;
+  }) : _aiService = aiService,
+       _ttsService = ttsService;
 
   final AiService _aiService;
   final TtsService _ttsService;
@@ -40,7 +40,10 @@ class NeurobotController extends ChangeNotifier {
     return out;
   }
 
-  Future<String> replyToUser(String userText, {bool speakResponse = false}) async {
+  Future<String> replyToUser(
+    String userText, {
+    bool speakResponse = false,
+  }) async {
     final trimmed = userText.trim();
     VoiceLog.ai('user prompt', detail: trimmed);
 

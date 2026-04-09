@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:neuro_link/vocal-mode/screens/vocal_screen.dart';
 
-import '../deaf_mode/deaf_mode_home.dart';
-import '../services/navigation_service.dart';
+import 'eyeunlock_screen.dart';
 
-/// Mode selection — NeuroLink home. Tapping Vocal Mode opens [VocalHomeScreen] via named route.
+/// Mode selection — NeuroLink home. Tapping Vocal Mode opens [VocalScreen].
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -40,7 +40,11 @@ class HomeScreen extends StatelessWidget {
                   trailingColor: const Color(0xFF2563EB),
                   cardTint: const Color(0xFFF8FAFF),
                   onTap: () {
-                    Navigator.of(context).pushNamed(VoiceNavigationService.vocalHome);
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const VocalScreen(),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(height: 18),
@@ -54,7 +58,13 @@ class HomeScreen extends StatelessWidget {
                   trailingIcon: Icons.remove_red_eye_outlined,
                   trailingColor: const Color(0xFF16A34A),
                   cardTint: const Color(0xFFF0FDF4),
-                  onTap: () => _showPlaceholder(context, 'EyeUnlock Mode'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const EyeUnlockScreen(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 18),
                 _ModeCard(
@@ -66,13 +76,7 @@ class HomeScreen extends StatelessWidget {
                   trailingIcon: Icons.back_hand_outlined,
                   trailingColor: const Color(0xFFEA580C),
                   cardTint: const Color(0xFFFFF7ED),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const DeafModeHome(),
-                      ),
-                    );
-                  },
+                  onTap: () => _showPlaceholder(context, 'Deaf Mode'),
                 ),
               ],
             ),

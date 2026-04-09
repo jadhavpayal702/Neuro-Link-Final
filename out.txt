@@ -1,0 +1,8 @@
+Analyzing NeuroLink...
+
+warning - lib\screens\eyeunlock_screen.dart:44:7 - The value of the field '_debugFrameCount' isn't used. Try removing the field, or using it. - unused_field
+warning - lib\screens\eyeunlock_screen.dart:45:7 - The value of the field '_lastLoggedFaceCount' isn't used. Try removing the field, or using it. - unused_field
+   info - lib\screens\eyeunlock_screen.dart:44:7 - The private field _debugFrameCount could be 'final'. Try making the field 'final'. - prefer_final_fields
+   info - lib\screens\eyeunlock_screen.dart:45:7 - The private field _lastLoggedFaceCount could be 'final'. Try making the field 'final'. - prefer_final_fields
+
+4 issues found.

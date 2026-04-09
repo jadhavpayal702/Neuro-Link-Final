@@ -71,52 +71,77 @@ class _VocalHomeScreenState extends State<VocalHomeScreen> {
                     ),
                     const SizedBox(height: 10),
                     FeatureCard(
-                      gradientColors: const [Color(0xFF9333EA), Color(0xFF6D28D9)],
+                      gradientColors: const [
+                        Color(0xFF9333EA),
+                        Color(0xFF6D28D9),
+                      ],
                       icon: Icons.menu_book_rounded,
                       title: 'Learn',
                       subtitle: 'Audio Courses & Podcasts',
                       onTap: () {
-                        context.read<VocalController>().enterSection(VocalSection.learn);
+                        context.read<VocalController>().enterSection(
+                          VocalSection.learn,
+                        );
                         _goToSection(0);
                       },
                     ),
                     FeatureCard(
-                      gradientColors: const [Color(0xFFEC4899), Color(0xFFDB2777)],
+                      gradientColors: const [
+                        Color(0xFFEC4899),
+                        Color(0xFFDB2777),
+                      ],
                       icon: Icons.chat_bubble_rounded,
                       title: 'Communicate',
                       subtitle: 'Voice Chat & AI Assistant',
                       onTap: () {
-                        context.read<VocalController>().enterSection(VocalSection.communicate);
+                        context.read<VocalController>().enterSection(
+                          VocalSection.communicate,
+                        );
                         _goToSection(1);
                       },
                     ),
                     FeatureCard(
-                      gradientColors: const [Color(0xFF3B82F6), Color(0xFF4F46E5)],
+                      gradientColors: const [
+                        Color(0xFF3B82F6),
+                        Color(0xFF4F46E5),
+                      ],
                       icon: Icons.sports_esports_rounded,
                       title: 'Games',
                       subtitle: 'Voice-Controlled Games',
                       onTap: () {
-                        context.read<VocalController>().enterSection(VocalSection.play);
+                        context.read<VocalController>().enterSection(
+                          VocalSection.play,
+                        );
                         _goToSection(2);
                       },
                     ),
                     FeatureCard(
-                      gradientColors: const [Color(0xFF14B8A6), Color(0xFF0D9488)],
+                      gradientColors: const [
+                        Color(0xFF14B8A6),
+                        Color(0xFF0D9488),
+                      ],
                       icon: Icons.tune_rounded,
                       title: 'Smart Control',
                       subtitle: 'Voice IoT Commands',
                       onTap: () {
-                        context.read<VocalController>().enterSection(VocalSection.control);
+                        context.read<VocalController>().enterSection(
+                          VocalSection.control,
+                        );
                         _goToSection(3);
                       },
                     ),
                     FeatureCard(
-                      gradientColors: const [Color(0xFFF97316), Color(0xFFDC2626)],
+                      gradientColors: const [
+                        Color(0xFFF97316),
+                        Color(0xFFDC2626),
+                      ],
                       icon: Icons.groups_rounded,
                       title: 'Community',
                       subtitle: 'Voice Rooms & Chat',
                       onTap: () {
-                        context.read<VocalController>().enterSection(VocalSection.community);
+                        context.read<VocalController>().enterSection(
+                          VocalSection.community,
+                        );
                         _goToSection(4);
                       },
                     ),
@@ -129,8 +154,10 @@ class _VocalHomeScreenState extends State<VocalHomeScreen> {
             right: 20,
             bottom: fabBottom,
             child: _MicAndEmergencyFab(
-              onMicTap: () => context.read<VocalController>().repeatInstruction(),
-              onEmergencyTap: () => context.read<VocalController>().emergencyAction(),
+              onMicTap: () =>
+                  context.read<VocalController>().repeatInstruction(),
+              onEmergencyTap: () =>
+                  context.read<VocalController>().emergencyAction(),
             ),
           ),
         ],
@@ -167,17 +194,30 @@ class _VocalHeader extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _CircleIconButton(icon: Icons.arrow_back_ios_new_rounded, onPressed: onBack),
+                  _CircleIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    onPressed: onBack,
+                  ),
                   const Expanded(
                     child: Text(
                       'Vocal Mode',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                  _CircleIconButton(icon: Icons.home_outlined, onPressed: onHome),
+                  _CircleIconButton(
+                    icon: Icons.home_outlined,
+                    onPressed: onHome,
+                  ),
                   const SizedBox(width: 6),
-                  _CircleIconButton(icon: Icons.history_rounded, onPressed: onHistory),
+                  _CircleIconButton(
+                    icon: Icons.history_rounded,
+                    onPressed: onHistory,
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -185,7 +225,11 @@ class _VocalHeader extends StatelessWidget {
               const SizedBox(height: 14),
               const Text(
                 'Voice Navigation Ready',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 10),
               Padding(
@@ -233,7 +277,10 @@ class _CircleIconButton extends StatelessWidget {
 }
 
 class _MicAndEmergencyFab extends StatelessWidget {
-  const _MicAndEmergencyFab({required this.onMicTap, required this.onEmergencyTap});
+  const _MicAndEmergencyFab({
+    required this.onMicTap,
+    required this.onEmergencyTap,
+  });
   final VoidCallback onMicTap;
   final VoidCallback onEmergencyTap;
 
@@ -281,8 +328,15 @@ class _MicAndEmergencyFab extends StatelessWidget {
                 child: Ink(
                   width: 44,
                   height: 44,
-                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE53935)),
-                  child: const Icon(Icons.error_outline_rounded, color: Colors.white, size: 22),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFE53935),
+                  ),
+                  child: const Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
               ),
             ),

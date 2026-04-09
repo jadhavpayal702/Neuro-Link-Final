@@ -43,7 +43,11 @@ class LearnScreen extends StatelessWidget {
                       final title = controller.courses[index];
                       final progress = controller.lessonProgress[index] ?? 0.0;
                       return Padding(
-                        padding: EdgeInsets.only(bottom: index == controller.courses.length - 1 ? 0 : 16),
+                        padding: EdgeInsets.only(
+                          bottom: index == controller.courses.length - 1
+                              ? 0
+                              : 16,
+                        ),
                         child: _CourseCard(
                           index: index + 1,
                           title: title,
@@ -51,7 +55,9 @@ class LearnScreen extends StatelessWidget {
                           duration: '${30 + index * 5} min',
                           progress: progress,
                           numGradient: _numGrad,
-                          onPlay: () => controller.selectCourseByVoice(title.toLowerCase()),
+                          onPlay: () => controller.selectCourseByVoice(
+                            title.toLowerCase(),
+                          ),
                           onNext: controller.continueLesson,
                           onAnnounce: controller.repeatInstruction,
                         ),
@@ -62,11 +68,7 @@ class LearnScreen extends StatelessWidget {
               ),
             ],
           ),
-          const Positioned(
-            right: 18,
-            bottom: 18,
-            child: VocalEmergencyFab(),
-          ),
+          const Positioned(right: 18, bottom: 18, child: VocalEmergencyFab()),
         ],
       ),
     );
@@ -233,10 +235,7 @@ class _CourseCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${(progress * 100).round()}% Complete',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),
           Row(
@@ -256,8 +255,11 @@ class _CourseCard extends StatelessWidget {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.play_arrow_rounded,
-                              color: Colors.white, size: 28),
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                           SizedBox(width: 6),
                           Text(
                             'Play',
@@ -276,7 +278,10 @@ class _CourseCard extends StatelessWidget {
               const SizedBox(width: 10),
               _SmallGreyButton(icon: Icons.skip_next_rounded, onTap: onNext),
               const SizedBox(width: 10),
-              _SmallGreyButton(icon: Icons.volume_up_rounded, onTap: onAnnounce),
+              _SmallGreyButton(
+                icon: Icons.volume_up_rounded,
+                onTap: onAnnounce,
+              ),
             ],
           ),
         ],

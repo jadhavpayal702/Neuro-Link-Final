@@ -43,19 +43,24 @@ class _CommunicateScreenState extends State<CommunicateScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
               children: [
                 const _AssistantBubble(
-                  text: 'Say "Hello NeuroBot" and then speak naturally. You can also type below.',
+                  text:
+                      'Say "Hello NeuroBot" and then speak naturally. You can also type below.',
                 ),
                 const SizedBox(height: 14),
                 ...chat.map((entry) {
                   if (entry.startsWith('User: ')) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: _UserBubble(text: entry.replaceFirst('User: ', '')),
+                      child: _UserBubble(
+                        text: entry.replaceFirst('User: ', ''),
+                      ),
                     );
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: _AssistantBubble(text: entry.replaceFirst('NeuroBot: ', '')),
+                    child: _AssistantBubble(
+                      text: entry.replaceFirst('NeuroBot: ', ''),
+                    ),
                   );
                 }),
               ],
@@ -73,7 +78,9 @@ class _CommunicateScreenState extends State<CommunicateScreen> {
                         final text = _textController.text.trim();
                         if (text.isEmpty) return;
                         _textController.clear();
-                        await context.read<VocalController>().handleManualCommand(text);
+                        await context
+                            .read<VocalController>()
+                            .handleManualCommand(text);
                       },
                       borderRadius: BorderRadius.circular(28),
                       child: Ink(
@@ -85,10 +92,16 @@ class _CommunicateScreenState extends State<CommunicateScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                            const Icon(
+                              Icons.send_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Text(
-                              _textController.text.trim().isEmpty ? 'Say Hello NeuroBot' : 'Send Message',
+                              _textController.text.trim().isEmpty
+                                  ? 'Say Hello NeuroBot'
+                                  : 'Send Message',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
@@ -135,10 +148,13 @@ class _CommunicateScreenState extends State<CommunicateScreen> {
               controller: _textController,
               decoration: InputDecoration(
                 hintText: 'Type or speak your message',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.replay_rounded),
-                  onPressed: () => context.read<VocalController>().repeatInstruction(),
+                  onPressed: () =>
+                      context.read<VocalController>().repeatInstruction(),
                 ),
               ),
               onSubmitted: (value) async {
@@ -185,8 +201,11 @@ class _AssistantBubble extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.smart_toy_outlined,
-                    size: 20, color: Colors.grey.shade700),
+                Icon(
+                  Icons.smart_toy_outlined,
+                  size: 20,
+                  color: Colors.grey.shade700,
+                ),
                 const SizedBox(width: 8),
                 const Text(
                   'AI Assistant',

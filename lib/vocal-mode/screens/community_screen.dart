@@ -69,11 +69,7 @@ class CommunityScreen extends StatelessWidget {
               ),
             ],
           ),
-          const Positioned(
-            right: 18,
-            bottom: 18,
-            child: VocalEmergencyFab(),
-          ),
+          const Positioned(right: 18, bottom: 18, child: VocalEmergencyFab()),
         ],
       ),
     );
@@ -169,8 +165,10 @@ class _RoomCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFE4E6),
                   borderRadius: BorderRadius.circular(20),
@@ -189,23 +187,20 @@ class _RoomCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF666666),
-            ),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF666666)),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              Icon(Icons.person_outline_rounded,
-                  size: 18, color: Colors.grey.shade600),
+              Icon(
+                Icons.person_outline_rounded,
+                size: 18,
+                color: Colors.grey.shade600,
+              ),
               const SizedBox(width: 6),
               Text(
                 '$members members',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
               const Spacer(),
               Material(

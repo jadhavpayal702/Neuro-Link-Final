@@ -26,7 +26,10 @@ class PlayScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
                 decoration: BoxDecoration(
                   gradient: _scoreGrad,
                   borderRadius: BorderRadius.circular(18),
@@ -104,11 +107,7 @@ class PlayScreen extends StatelessWidget {
               ),
             ],
           ),
-          const Positioned(
-            right: 18,
-            bottom: 18,
-            child: VocalEmergencyFab(),
-          ),
+          const Positioned(right: 18, bottom: 18, child: VocalEmergencyFab()),
         ],
       ),
     );
@@ -224,8 +223,11 @@ class _GameCard extends StatelessWidget {
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.play_arrow_rounded,
-                          color: Colors.white, size: 26),
+                      Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
                       SizedBox(width: 8),
                       Text(
                         'Play Now',

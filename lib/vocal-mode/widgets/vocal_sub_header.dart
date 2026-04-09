@@ -6,10 +6,7 @@ import 'vocal_bottom_navigation.dart';
 
 /// Blue gradient top bar with back, title, home, and refresh — used on Vocal sub-screens.
 class VocalSubHeader extends StatelessWidget implements PreferredSizeWidget {
-  const VocalSubHeader({
-    super.key,
-    required this.title,
-  });
+  const VocalSubHeader({super.key, required this.title});
 
   final String title;
 
@@ -34,8 +31,11 @@ class VocalSubHeader extends StatelessWidget implements PreferredSizeWidget {
             children: [
               IconButton(
                 onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               Expanded(
                 child: Text(

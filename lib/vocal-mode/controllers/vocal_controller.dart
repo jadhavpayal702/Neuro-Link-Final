@@ -12,11 +12,7 @@ import '../services/voice_log.dart';
 import '../services/voice_service.dart';
 import 'neurobot_controller.dart';
 
-enum VocalModeState {
-  activeConversation,
-  navigationMode,
-  gameMode,
-}
+enum VocalModeState { activeConversation, navigationMode, gameMode }
 
 enum VocalGameKind { none, quiz, memory, riddle }
 
@@ -37,11 +33,11 @@ class VocalController extends ChangeNotifier {
     required NavigationService navigationService,
     required NeurobotController neurobotController,
     required VoiceNavigationService voiceNavigation,
-  })  : _voiceService = voiceService,
-        _ttsService = ttsService,
-        _navigationService = navigationService,
-        _neurobotController = neurobotController,
-        _voiceNavigation = voiceNavigation;
+  }) : _voiceService = voiceService,
+       _ttsService = ttsService,
+       _navigationService = navigationService,
+       _neurobotController = neurobotController,
+       _voiceNavigation = voiceNavigation;
 
   final VoiceService _voiceService;
   final TtsService _ttsService;
@@ -89,7 +85,8 @@ class VocalController extends ChangeNotifier {
 
   final List<Map<String, Object>> _riddles = <Map<String, Object>>[
     <String, Object>{
-      'q': 'What has keys but no locks, space but no room, and you can enter but not go inside?',
+      'q':
+          'What has keys but no locks, space but no room, and you can enter but not go inside?',
       'a': <String>['keyboard', 'a keyboard'],
     },
     <String, Object>{
@@ -107,7 +104,8 @@ class VocalController extends ChangeNotifier {
   String get lastHeard => _lastHeard;
   String get statusMessage => _statusMessage;
   bool get initialized => _initialized;
-  Map<int, double> get lessonProgress => Map<int, double>.unmodifiable(_lessonProgress);
+  Map<int, double> get lessonProgress =>
+      Map<int, double>.unmodifiable(_lessonProgress);
   int get memoryLevel => _memoryLevel;
   List<int> get memorySequence => List<int>.unmodifiable(_memorySequence);
   int get quizScore => _quizScore;
@@ -146,7 +144,9 @@ class VocalController extends ChangeNotifier {
     return remainder;
   }
 
-  Future<void> _activateNeurobotConversation({String initialPrompt = ''}) async {
+  Future<void> _activateNeurobotConversation({
+    String initialPrompt = '',
+  }) async {
     _mode = VocalModeState.activeConversation;
     _neurobotAwake = true;
     _currentSection = VocalSection.communicate;
@@ -176,7 +176,9 @@ class VocalController extends ChangeNotifier {
           'Microphone permission is required. Please allow microphone access and reopen voice mode.';
       notifyListeners();
       await _ttsService.speak(_statusMessage);
-      VoiceLog.error('Mic init failed: ok=$ok permission=$micPermissionGranted');
+      VoiceLog.error(
+        'Mic init failed: ok=$ok permission=$micPermissionGranted',
+      );
       return;
     }
     _initialized = true;
@@ -272,7 +274,10 @@ class VocalController extends ChangeNotifier {
     _mode = VocalModeState.gameMode;
     _gameKind = VocalGameKind.memory;
     final random = Random();
-    _memorySequence = List<int>.generate(_memoryLevel + 2, (_) => random.nextInt(9) + 1);
+    _memorySequence = List<int>.generate(
+      _memoryLevel + 2,
+      (_) => random.nextInt(9) + 1,
+    );
     notifyListeners();
     await _speakResponse(
       'Memory game. Listen to this sequence: ${_memorySequence.join(', ')}. Now repeat the numbers in order.',
@@ -292,7 +297,9 @@ class VocalController extends ChangeNotifier {
       await startMemoryGame();
       return;
     }
-    await _speakResponse('Not quite. Say the sequence again, or say back to exit the game.');
+    await _speakResponse(
+      'Not quite. Say the sequence again, or say back to exit the game.',
+    );
   }
 
   Future<void> startQuizGame() async {
@@ -317,7 +324,9 @@ class VocalController extends ChangeNotifier {
       if (_quizIndex >= _quizQuestions.length) {
         _mode = VocalModeState.activeConversation;
         _gameKind = VocalGameKind.none;
-        await _speakResponse('Quiz finished. Your score is $_quizScore points.');
+        await _speakResponse(
+          'Quiz finished. Your score is $_quizScore points.',
+        );
         return;
       }
       final nextQuestion = _quizQuestions[_quizIndex]['q'] as String;
@@ -347,7 +356,9 @@ class VocalController extends ChangeNotifier {
       if (_riddleIndex >= _riddles.length) {
         _mode = VocalModeState.activeConversation;
         _gameKind = VocalGameKind.none;
-        await _speakResponse('You finished all riddles. Say play for more games.');
+        await _speakResponse(
+          'You finished all riddles. Say play for more games.',
+        );
         return;
       }
       final q = _riddles[_riddleIndex]['q'] as String;
@@ -363,11 +374,15 @@ class VocalController extends ChangeNotifier {
     _voiceNavigation.pushNavigation();
     notifyListeners();
     try {
-      final steps = await _navigationService.buildVoiceGuidance(destinationLabel: destination);
+      final steps = await _navigationService.buildVoiceGuidance(
+        destinationLabel: destination,
+      );
       for (final step in steps) {
         await _speakResponse(step, restartListening: false);
       }
-      await _speakResponse('Say repeat to hear directions again, or stop navigation.');
+      await _speakResponse(
+        'Say repeat to hear directions again, or stop navigation.',
+      );
     } catch (e) {
       VoiceLog.error('Navigation failed', error: e);
       await _speakResponse(
@@ -413,7 +428,9 @@ class VocalController extends ChangeNotifier {
       }
       if (_neurobotAwake || _currentSection == VocalSection.communicate) {
         try {
-          final reply = await _neurobotController.replyToUser(rawInput.isEmpty ? command : rawInput);
+          final reply = await _neurobotController.replyToUser(
+            rawInput.isEmpty ? command : rawInput,
+          );
           await _speakResponse(reply);
         } catch (e) {
           VoiceLog.error('NeuroBot failed', error: e);
@@ -423,15 +440,15 @@ class VocalController extends ChangeNotifier {
         }
         return;
       }
-      await _speakResponse(
-        'Sorry, I didn\'t understand. Please try again.',
-      );
+      await _speakResponse('Sorry, I didn\'t understand. Please try again.');
       return;
     }
 
     if (command == 'pause listening') {
       await _voiceService.pauseListening();
-      await _ttsService.speak('Listening paused. Say resume listening when you want to continue.');
+      await _ttsService.speak(
+        'Listening paused. Say resume listening when you want to continue.',
+      );
       return;
     }
     if (command == 'resume listening') {
@@ -461,7 +478,8 @@ class VocalController extends ChangeNotifier {
     }
 
     final courseFromSpeech = CourseModel.matchBySpeech(rawInput);
-    final allowCourseByName = _currentSection == VocalSection.learn ||
+    final allowCourseByName =
+        _currentSection == VocalSection.learn ||
         _currentSection == VocalSection.home;
     if (courseFromSpeech != null && allowCourseByName) {
       if (_currentSection != VocalSection.learn) {
@@ -491,9 +509,7 @@ class VocalController extends ChangeNotifier {
 
     if (command == 'home') {
       _navigateHomeVoice();
-      await _speakResponse(
-        'Returning home.',
-      );
+      await _speakResponse('Returning home.');
       return;
     }
 
@@ -526,7 +542,9 @@ class VocalController extends ChangeNotifier {
       _currentSection = VocalSection.play;
       _voiceNavigation.pushPlay();
       notifyListeners();
-      await _speakResponse('Opening games. Say quiz game, memory game, or riddle game.');
+      await _speakResponse(
+        'Opening games. Say quiz game, memory game, or riddle game.',
+      );
       return;
     }
 
@@ -560,7 +578,9 @@ class VocalController extends ChangeNotifier {
     }
 
     if (command == 'navigate') {
-      final destination = _extractDestination(rawInput.isEmpty ? command : rawInput);
+      final destination = _extractDestination(
+        rawInput.isEmpty ? command : rawInput,
+      );
       await navigateToDestination(destination);
       return;
     }
@@ -652,7 +672,10 @@ class VocalController extends ChangeNotifier {
     return 'nearby destination';
   }
 
-  Future<void> _announceSectionOptions(VocalSection section, {bool resumeListening = true}) async {
+  Future<void> _announceSectionOptions(
+    VocalSection section, {
+    bool resumeListening = true,
+  }) async {
     final message = switch (section) {
       VocalSection.home =>
         'Available commands are Learn, Communicate, Play, Navigate, Control, Community, Help, Home, Back, and Emergency.',
@@ -664,15 +687,17 @@ class VocalController extends ChangeNotifier {
         'You are in Play. Say quiz game, memory game, or riddle game.',
       VocalSection.control =>
         'You are in Control. Say turn on light, turn off fan, or back.',
-      VocalSection.community =>
-        'You are in Community. Say back to return.',
+      VocalSection.community => 'You are in Community. Say back to return.',
       VocalSection.navigation =>
         'Navigation mode. Say stop navigation or repeat.',
     };
     await _speakResponse(message, restartListening: resumeListening);
   }
 
-  Future<void> _speakResponse(String text, {bool restartListening = true}) async {
+  Future<void> _speakResponse(
+    String text, {
+    bool restartListening = true,
+  }) async {
     _statusMessage = text;
     notifyListeners();
     if (restartListening) {

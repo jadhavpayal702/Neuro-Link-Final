@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'controllers/neurobot_controller.dart';
-import 'controllers/vocal_controller.dart';
-import 'services/ai_service.dart';
-import 'services/navigation_service.dart';
-import 'services/tts_service.dart';
-import 'services/voice_service.dart';
-import 'screens/community_screen.dart';
-import 'screens/communicate_screen.dart';
-import 'screens/control_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/learn_screen.dart';
-import 'screens/navigation_screen.dart';
-import 'screens/play_screen.dart';
-import 'screens/vocal_home.dart';
+import 'vocal-mode/controllers/neurobot_controller.dart';
+import 'vocal-mode/controllers/vocal_controller.dart';
+import 'vocal-mode/services/ai_service.dart';
+import 'vocal-mode/services/navigation_service.dart';
+import 'vocal-mode/services/tts_service.dart';
+import 'vocal-mode/services/voice_service.dart';
+import 'vocal-mode/screens/community_screen.dart';
+import 'vocal-mode/screens/communicate_screen.dart';
+import 'vocal-mode/screens/control_screen.dart';
+import 'vocal-mode/screens/home_screen.dart';
+import 'vocal-mode/screens/learn_screen.dart';
+import 'vocal-mode/screens/navigation_screen.dart';
+import 'vocal-mode/screens/play_screen.dart';
+import 'vocal-mode/screens/vocal_home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +39,9 @@ class NeuroLinkApp extends StatelessWidget {
         Provider<TtsService>(create: (_) => TtsService()),
         Provider<AiService>(create: (_) => AiService()),
         Provider<NavigationService>(create: (_) => NavigationService()),
-        Provider<VoiceNavigationService>(create: (_) => VoiceNavigationService()),
+        Provider<VoiceNavigationService>(
+          create: (_) => VoiceNavigationService(),
+        ),
         ChangeNotifierProvider<NeurobotController>(
           create: (context) => NeurobotController(
             aiService: context.read<AiService>(),
@@ -74,13 +76,18 @@ class NeuroLinkApp extends StatelessWidget {
             initialRoute: '/',
             routes: {
               '/': (context) => const HomeScreen(),
-              VoiceNavigationService.vocalHome: (context) => const VocalHomeScreen(),
+              VoiceNavigationService.vocalHome: (context) =>
+                  const VocalHomeScreen(),
               VoiceNavigationService.learn: (context) => const LearnScreen(),
-              VoiceNavigationService.communicate: (context) => const CommunicateScreen(),
+              VoiceNavigationService.communicate: (context) =>
+                  const CommunicateScreen(),
               VoiceNavigationService.play: (context) => const PlayScreen(),
-              VoiceNavigationService.control: (context) => const ControlScreen(),
-              VoiceNavigationService.community: (context) => const CommunityScreen(),
-              VoiceNavigationService.navigation: (context) => const NavigationScreen(),
+              VoiceNavigationService.control: (context) =>
+                  const ControlScreen(),
+              VoiceNavigationService.community: (context) =>
+                  const CommunityScreen(),
+              VoiceNavigationService.navigation: (context) =>
+                  const NavigationScreen(),
             },
           );
         },
