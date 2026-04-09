@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../deaf_mode/deaf_mode_home.dart';
-import 'vocal_screen.dart';
+import '../services/navigation_service.dart';
 
-/// Mode selection — NeuroLink home. Tapping Vocal Mode opens [VocalScreen].
+/// Mode selection — NeuroLink home. Tapping Vocal Mode opens [VocalHomeScreen] via named route.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -40,11 +40,7 @@ class HomeScreen extends StatelessWidget {
                   trailingColor: const Color(0xFF2563EB),
                   cardTint: const Color(0xFFF8FAFF),
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const VocalScreen(),
-                      ),
-                    );
+                    Navigator.of(context).pushNamed(VoiceNavigationService.vocalHome);
                   },
                 ),
                 const SizedBox(height: 18),

@@ -97,7 +97,7 @@ class _VoiceBanner extends StatelessWidget {
           const SizedBox(width: 12),
           Flexible(
             child: Text(
-              'Say "PLAY ONE", "PLAY TWO", "PAUSE", or "NEXT"',
+              'Say a course name, for example English Speaking or Coding Basics. Say continue for the next step.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.98),

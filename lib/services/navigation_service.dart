@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+
+import 'voice_log.dart';
 
 class NavigationService {
   Future<Position> getCurrentPosition() async {
@@ -72,5 +75,85 @@ class NavigationService {
       'Turn left and continue for 80 meters.',
       'Destination is near your right side.',
     ];
+  }
+}
+
+/// Global voice-triggered navigation for Vocal Mode (named routes on [navigatorKey]).
+class VoiceNavigationService {
+  VoiceNavigationService();
+
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  static const String vocalHome = '/vocal';
+  static const String learn = '/vocal/learn';
+  static const String communicate = '/vocal/communicate';
+  static const String play = '/vocal/play';
+  static const String control = '/vocal/control';
+  static const String community = '/vocal/community';
+  static const String navigation = '/vocal/navigation';
+
+  NavigatorState? get _nav => navigatorKey.currentState;
+
+  void pushLearn() {
+    _pushNamed(learn, 'learn');
+  }
+
+  void pushCommunicate() {
+    _pushNamed(communicate, 'communicate');
+  }
+
+  void pushPlay() {
+    _pushNamed(play, 'play');
+  }
+
+  void pushControl() {
+    _pushNamed(control, 'control');
+  }
+
+  void pushCommunity() {
+    _pushNamed(community, 'community');
+  }
+
+  void pushNavigation() {
+    _pushNamed(navigation, 'navigation');
+  }
+
+  void _pushNamed(String route, String label) {
+    final nav = _nav;
+    if (nav == null) {
+      VoiceLog.navigation('navigator null, skip $label', detail: route);
+      return;
+    }
+    VoiceLog.navigation('pushNamed', detail: route);
+    nav.pushNamed(route);
+  }
+
+  /// Pops one route if possible (voice "back").
+  void pop() {
+    final nav = _nav;
+    if (nav == null) return;
+    if (nav.canPop()) {
+      VoiceLog.navigation('pop', detail: null);
+      nav.pop();
+    }
+  }
+
+  /// Pops until Vocal home dashboard.
+  void popToVocalHome() {
+    final nav = _nav;
+    if (nav == null) return;
+    VoiceLog.navigation('popToVocalHome', detail: vocalHome);
+    nav.popUntil((route) {
+      final name = route.settings.name;
+      return name == vocalHome || route.isFirst;
+    });
+  }
+
+  /// Pops to app mode picker (root).
+  void popToAppRoot() {
+    final nav = _nav;
+    if (nav == null) return;
+    VoiceLog.navigation('popToAppRoot', detail: '/');
+    nav.popUntil((route) => route.isFirst);
   }
 }

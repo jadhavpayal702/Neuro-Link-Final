@@ -1,135 +1,134 @@
-// import 'dart:convert';
-
-// import 'package:http/http.dart' as http;
-
-// // ignore: constant_identifier_names
-// const String OPENAI_API_KEY = 'YOUR_API_KEY_HERE';
-
-// class AiService {
-//   static const String _chatEndpoint = 'https://api.openai.com/v1/chat/completions';
-
-//   Future<String> generateReply(String prompt) => sendMessageToAI(prompt);
-
-//   Future<String> sendMessageToAI(String message) async {
-//     final text = message.trim();
-//     if (text.isEmpty) {
-//       return 'Please say something and I will help you.';
-//     }
-
-//     if (OPENAI_API_KEY == 'YOUR_API_KEY_HERE') {
-//       return _localFallback(text);
-//     }
-
-//     try {
-//       final response = await http.post(
-//         Uri.parse(_chatEndpoint),
-//         headers: <String, String>{
-//           'Content-Type': 'application/json',
-//           'Authorization': 'Bearer $OPENAI_API_KEY',
-//         },
-//         body: jsonEncode(<String, dynamic>{
-//           'model': 'gpt-4o-mini',
-//           'temperature': 0.4,
-//           'messages': <Map<String, String>>[
-//             <String, String>{
-//               'role': 'system',
-//               'content':
-//                   'You are NeuroBot, a concise and supportive assistant for blind users. Keep responses clear and practical.',
-//             },
-//             <String, String>{'role': 'user', 'content': text},
-//           ],
-//         }),
-//       );
-
-//       if (response.statusCode == 200) {
-//         final body = jsonDecode(response.body) as Map<String, dynamic>;
-//         final choices = body['choices'] as List<dynamic>? ?? <dynamic>[];
-//         if (choices.isNotEmpty) {
-//           final messageMap = (choices.first as Map<String, dynamic>)['message'] as Map<String, dynamic>?;
-//           final content = (messageMap?['content'] ?? '').toString().trim();
-//           if (content.isNotEmpty) {
-//             return content;
-//           }
-//         }
-//       }
-//       return _localFallback(text);
-//     } catch (_) {
-//       return _localFallback(text);
-//     }
-//   }
-
-//   String _localFallback(String prompt) {
-//     final lower = prompt.toLowerCase();
-//     if (lower.contains('time')) {
-//       final now = DateTime.now();
-//       return 'It is ${now.hour % 12 == 0 ? 12 : now.hour % 12}:${now.minute.toString().padLeft(2, '0')} ${now.hour >= 12 ? 'PM' : 'AM'}.';
-//     }
-//     if (lower.contains('help')) {
-//       return 'You can say learn, play, communicate, control, or back. You can also say hello neurobot to start open conversation mode.';
-//     }
-//     if (lower.contains('lonely')) {
-//       return 'You are not alone. I am here with you. Take a deep breath, and tell me what support you need right now.';
-//     }
-//     return 'I heard you say: $prompt. Add your OpenAI API key in ai_service.dart for smarter responses.';
-//   }
-// }
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
+import 'voice_log.dart';
+
+/// NeuroBot / Gemini integration with logging, optional API key, and de-duplication hints.
 class AiService {
-  static const String _apiKey = "AIzaSyA7GLvX5dg4a9_3zh_FpddqNN_Pfwe4nl8";
+  AiService();
+
   static const String _baseUrl =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+  /// Set at build time: `--dart-define=NEUROBOT_API_KEY=your_key`
+  static const String _apiKeyFromEnv = String.fromEnvironment(
+    'NEUROBOT_API_KEY',
+    defaultValue: '',
+  );
+
+  String? _lastRawReply;
+  int _requestCounter = 0;
+
+  bool get hasValidApiKey => _apiKeyFromEnv.trim().isNotEmpty;
 
   Future<String> sendMessageToAI(String message) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$_baseUrl?key=$_apiKey"),
-        headers: {
-          "Content-Type": "application/json",
+    return sendWithHistory(message, const <Map<String, String>>[]);
+  }
+
+  /// [history] entries: `{'role': 'user'|'model', 'text': '...'}` — last turns for context.
+  Future<String> sendWithHistory(
+    String message,
+    List<Map<String, String>> history,
+  ) async {
+    final trimmed = message.trim();
+    if (trimmed.isEmpty) {
+      return 'Please say something and I will help you.';
+    }
+
+    if (!hasValidApiKey) {
+      VoiceLog.ai('No API key configured', detail: 'NEUROBOT_API_KEY empty');
+      return 'API key invalid. Please update your NeuroBot API key in settings. '
+          'Developers: pass --dart-define=NEUROBOT_API_KEY=your_key when building.';
+    }
+
+    _requestCounter++;
+    final uniqueHint =
+        '[session turn $_requestCounter at ${DateTime.now().toIso8601String()}] ';
+    final userPayload = uniqueHint + trimmed;
+
+    final contents = <Map<String, dynamic>>[];
+    for (final h in history) {
+      final role = h['role'] ?? 'user';
+      final text = h['text'] ?? '';
+      if (text.isEmpty) continue;
+      contents.add({
+        'role': role == 'model' ? 'model' : 'user',
+        'parts': [
+          {'text': text},
+        ],
+      });
+    }
+    contents.add({
+      'role': 'user',
+      'parts': [
+        {
+          'text':
+              'You are NeuroBot, a concise assistant for blind users. '
+              'Answer clearly in short paragraphs. Vary wording; do not repeat prior replies verbatim.\n'
+              '$userPayload',
         },
-        body: jsonEncode({
-          "contents": [
-            {
-              "parts": [
-                {
-                  "text":
-                      "You are NeuroBot, a helpful assistant for blind users. Keep responses simple, clear, and supportive.\nUser: $message"
-                }
-              ]
-            }
-          ]
-        }),
+      ],
+    });
+
+    final uri = Uri.parse('$_baseUrl?key=$_apiKeyFromEnv');
+    try {
+      VoiceLog.ai('POST generateContent', detail: 'historyLen=${history.length}');
+      final response = await http.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({'contents': contents}),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final text =
-            data['candidates']?[0]?['content']?['parts']?[0]?['text'];
+      VoiceLog.ai(
+        'response status=${response.statusCode}',
+        detail: response.body.length > 400 ? '${response.body.substring(0, 400)}...' : response.body,
+      );
 
-        if (text != null && text.toString().isNotEmpty) {
-          return text.toString();
-        }
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        return 'API key invalid. Please update your NeuroBot API key in settings.';
       }
 
-      return _fallback(message);
-    } catch (e) {
-      return _fallback(message);
+      if (response.statusCode == 429) {
+        return 'The service is busy. Please wait a moment and try again.';
+      }
+
+      if (response.statusCode != 200) {
+        return _localFallback(trimmed);
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final text = data['candidates']?[0]?['content']?['parts']?[0]?['text'];
+      final reply = text?.toString().trim() ?? '';
+      if (reply.isEmpty) {
+        VoiceLog.ai('Empty candidate text', detail: null);
+        return _localFallback(trimmed);
+      }
+
+      if (_lastRawReply != null && _lastRawReply == reply) {
+        VoiceLog.ai('Duplicate reply detected — appending variation hint', detail: null);
+        _lastRawReply = reply;
+        return '$reply — Tell me if you want more detail on a specific part.';
+      }
+      _lastRawReply = reply;
+      return reply;
+    } catch (e, st) {
+      VoiceLog.error('AI request failed', error: e, stack: st);
+      return _localFallback(trimmed);
     }
   }
 
-  String _fallback(String message) {
-    final lower = message.toLowerCase();
-
-    if (lower.contains("time")) {
+  String _localFallback(String prompt) {
+    final lower = prompt.toLowerCase();
+    if (lower.contains('time')) {
       final now = DateTime.now();
-      return "It is ${now.hour}:${now.minute}";
+      final h = now.hour % 12 == 0 ? 12 : now.hour % 12;
+      return 'It is $h:${now.minute.toString().padLeft(2, '0')} ${now.hour >= 12 ? 'PM' : 'AM'}.';
     }
-
-    if (lower.contains("help")) {
-      return "You can say learn, play, communicate, or navigate.";
+    if (lower.contains('help')) {
+      return 'You can say learn, communicate, play, control, back, or home. '
+          'Say hello NeuroBot to chat with me.';
     }
-
-    return "I heard you. Can you please repeat or say help?";
+    return 'I could not reach the AI service. Please check your connection and API key, then try again.';
   }
 }

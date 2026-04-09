@@ -142,55 +142,56 @@ class LearnScreen extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'Captioned Videos',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-        const SizedBox(height: 8),
-        ...c.videos.map(
-          (video) => Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 62,
-                  height: 62,
-                  decoration: BoxDecoration(
-                    color: DeafTheme.orangeA,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    video.thumbnail,
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        video.title,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      Text('Duration: ${video.duration}'),
-                      if (video.captions) const Text('CC   🤟 Sign'),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.play_arrow_rounded, color: DeafTheme.orangeA),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
+
+        // const SizedBox(height: 8),
+        // const Text(
+        //   'Captioned Videos',
+        //   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+        // ),
+        // const SizedBox(height: 8),
+        // ...c.videos.map(
+        //   (video) => Container(
+        //     margin: const EdgeInsets.only(bottom: 10),
+        //     padding: const EdgeInsets.all(12),
+        //     decoration: BoxDecoration(
+        //       color: Colors.white,
+        //       borderRadius: BorderRadius.circular(16),
+        //     ),
+        //     child: Row(
+        //       children: [
+        //         Container(
+        //           width: 62,
+        //           height: 62,
+        //           decoration: BoxDecoration(
+        //             color: DeafTheme.orangeA,
+        //             borderRadius: BorderRadius.circular(12),
+        //           ),
+        //           alignment: Alignment.center,
+        //           child: Text(
+        //             video.thumbnail,
+        //             style: const TextStyle(fontSize: 28),
+        //           ),
+        //         ),
+        //         const SizedBox(width: 10),
+        //         Expanded(
+        //           child: Column(
+        //             crossAxisAlignment: CrossAxisAlignment.start,
+        //             children: [
+        //               Text(
+        //                 video.title,
+        //                 style: const TextStyle(fontWeight: FontWeight.w700),
+        //               ),
+        //               Text('Duration: ${video.duration}'),
+        //               if (video.captions) const Text('CC   🤟 Sign'),
+        //             ],
+        //           ),
+        //         ),
+        //         const Icon(Icons.play_arrow_rounded, color: DeafTheme.orangeA),
+        //       ],
+        //     ),
+        //   ),
+        // ),
+        //const SizedBox(height: 10),
         const QuickActions(),
       ],
     );

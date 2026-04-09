@@ -26,7 +26,7 @@ class QuickActions extends StatelessWidget {
               ),
               SizedBox(width: 8),
               Expanded(
-                child: _Q(icon: '⚙️', label: 'Settings'),
+                child: _Q(icon: '⚙️', label: 'Location'),
               ),
               SizedBox(width: 8),
               Expanded(

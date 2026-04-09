@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/vocal_controller.dart';
-import 'game_screen.dart';
-import 'navigation_screen.dart';
 import '../vocal_navigation.dart';
 import '../widgets/feature_card.dart';
 import '../widgets/vocal_bottom_navigation.dart';
@@ -29,30 +27,6 @@ class _VocalHomeScreenState extends State<VocalHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final controller = context.read<VocalController>();
-      controller.attachNavigator((section, payload) {
-        if (!mounted) return;
-        if (section == VocalSection.navigation) {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const NavigationScreen()),
-          );
-          return;
-        }
-        if (section == VocalSection.play && payload == 'game_screen') {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const GameScreen()),
-          );
-          return;
-        }
-        final index = switch (section) {
-          VocalSection.learn => 0,
-          VocalSection.communicate => 1,
-          VocalSection.play => 2,
-          VocalSection.control => 3,
-          VocalSection.community => 4,
-          _ => 0,
-        };
-        pushVocalSection(context, index);
-      });
       await controller.initializeVoiceMode();
       await controller.enterSection(VocalSection.home);
     });
