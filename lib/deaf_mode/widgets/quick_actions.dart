@@ -22,11 +22,11 @@ class QuickActions extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _Q(icon: '🆘', label: 'Help'),
+                child: _Q(icon: '🚨', label: 'Help'),
               ),
               SizedBox(width: 8),
               Expanded(
-                child: _Q(icon: '⚙️', label: 'Location'),
+                child: _Q(icon: '📍', label: 'Location'),
               ),
               SizedBox(width: 8),
               Expanded(
