@@ -1,15 +1,39 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:neuro_link/eye-mode/eye_tracking/gaze_blink_pipeline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:neuro_link/eye-mode/services/facemesh.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:neuro_link/eye-mode/eye_tracking/gaze_blink_pipeline.dart';
+import 'package:neuro_link/eye-mode/services/facemesh.dart';
+import 'package:neuro_link/eye-mode/models/video.dart';
+import 'package:neuro_link/eye-mode/screens/learn_section.dart';
+import 'package:neuro_link/eye-mode/screens/learn_video_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-enum _EyePage { calibration, dashboard, communicate, learn, games, smart }
+import 'package:neuro_link/eye-mode/models/learn_data.dart';
+import 'package:neuro_link/eye-mode/screens/games_menu.dart';
+import 'package:neuro_link/eye-mode/screens/game_word_builder.dart';
+import 'package:neuro_link/eye-mode/screens/game_picture_match.dart';
+import 'package:neuro_link/eye-mode/screens/game_spell_it.dart';
+import 'package:neuro_link/eye-mode/screens/game_find_word.dart';
+import 'package:neuro_link/eye-mode/models/game_models.dart';
+
+enum _EyePage {
+  calibration,
+  dashboard,
+  communicate,
+  learn,
+  learnVideos,
+  games,
+  gamesMenu,
+  gameWordBuilder,
+  gamePictureMatch,
+  gameSpellIt,
+  gameFindWord,
+  smart
+}
 
 class EyeUnlockScreen extends StatefulWidget {
   const EyeUnlockScreen({super.key});
@@ -31,6 +55,9 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   bool _reactionReady = false;
   Offset _targetPos = const Offset(0.35, 0.55);
 
+  String _selectedCategory = '';
+  List<Video> _selectedVideos = [];
+
   late final GazePipeline _gazePipeline;
   bool _faceDetected = false;
   String _blinkStatus = 'OPEN';
@@ -41,6 +68,10 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   final Map<int, GlobalKey> _focusKeys = <int, GlobalKey>{};
   late final FlutterTts _tts;
   bool _isSpeaking = false;
+  int _lastFocusIndex = -1;
+  final Stopwatch _dwellStopwatch = Stopwatch();
+  double _dwellProgress = 0.0;
+  Timer? _dwellUpdateTimer;
   int _debugFrameCount = 0;
 
   // Calibration baseline capture.
@@ -91,11 +122,26 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       setState(() => _reactionReady = !_reactionReady);
     });
     unawaited(_initCamera());
+    _dwellUpdateTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (!mounted) return;
+      if (_dwellStopwatch.isRunning) {
+        setState(() {
+          _dwellProgress = (_dwellStopwatch.elapsedMilliseconds / 1500).clamp(0.0, 1.0);
+        });
+        if (_dwellProgress >= 1.0) {
+          _dwellStopwatch.reset();
+          _dwellStopwatch.stop();
+          _dwellProgress = 0.0;
+          _activateFocused();
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     stopFaceMeshNative();
+    _dwellUpdateTimer?.cancel();
     _tts.stop();
     _dotController.dispose();
     super.dispose();
@@ -226,6 +272,11 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     }
     if (bestIdx != null && bestIdx != _focusIndex) {
       setState(() => _focusIndex = bestIdx!);
+
+      // Reset dwell timer on focus change
+      _dwellStopwatch.reset();
+      _dwellStopwatch.start();
+      _dwellProgress = 0.0;
     }
   }
 
@@ -240,24 +291,37 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
         _activateCommunicate();
       case _EyePage.learn:
         if (_focusIndex >= 0 && _focusIndex <= 5) {
-          _showHint('Opened video ${_focusIndex + 1}');
+          final categories = learnContent.keys.toList();
+          final cat = categories[_focusIndex];
+          final videosMapping = learnContent[cat]!;
+          final videos = videosMapping.map((m) => Video.fromMap(m)).toList();
+          setState(() {
+            _selectedCategory = cat;
+            _selectedVideos = videos;
+            _goTo(_EyePage.learnVideos);
+          });
+        }
+        if (_focusIndex == _focusCount - 2) _goPrevModule();
+        if (_focusIndex == _focusCount - 1) _goNextModule();
+      case _EyePage.learnVideos:
+        if (_focusIndex >= 0 && _focusIndex < _selectedVideos.length) {
+          _launchUrl(_selectedVideos[_focusIndex].url);
         }
         if (_focusIndex == _focusCount - 2) _goPrevModule();
         if (_focusIndex == _focusCount - 1) _goNextModule();
       case _EyePage.games:
-        if (_focusIndex == 0) {
-          _targetHits += 1;
-          _targetPos = Offset(
-            0.2 + (Random().nextDouble() * 0.6),
-            0.25 + (Random().nextDouble() * 0.6),
-          );
-        }
-        if (_focusIndex == 1 && _reactionReady) {
-          _reactionHits += 1;
-          _reactionReady = false;
-        }
-        if (_focusIndex == _focusCount - 2) _goPrevModule();
-        if (_focusIndex == _focusCount - 1) _goNextModule();
+        _goTo(_EyePage.gamesMenu);
+      case _EyePage.gamesMenu:
+        if (_focusIndex == 0) _goTo(_EyePage.gameWordBuilder);
+        if (_focusIndex == 1) _goTo(_EyePage.gamePictureMatch);
+        if (_focusIndex == 2) _goTo(_EyePage.gameSpellIt);
+        if (_focusIndex == 3) _goTo(_EyePage.gameFindWord);
+      case _EyePage.gameWordBuilder:
+      case _EyePage.gamePictureMatch:
+      case _EyePage.gameSpellIt:
+      case _EyePage.gameFindWord:
+        // Clicks handled by the game widgets via onWin or direct onTap
+        break;
       case _EyePage.smart:
         if (_focusIndex == 0) _lightOn = !_lightOn;
         if (_focusIndex == 1) _fanOn = !_fanOn;
@@ -277,6 +341,13 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
         duration: const Duration(milliseconds: 900),
       ),
     );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      _showHint('Could not launch video');
+    }
   }
 
   void _activateCommunicate() {
@@ -350,9 +421,17 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
         _goTo(_EyePage.learn);
         return;
       case _EyePage.learn:
+        _goTo(_EyePage.learnVideos);
+        return;
+      case _EyePage.learnVideos:
         _goTo(_EyePage.games);
         return;
       case _EyePage.games:
+      case _EyePage.gamesMenu:
+      case _EyePage.gameWordBuilder:
+      case _EyePage.gamePictureMatch:
+      case _EyePage.gameSpellIt:
+      case _EyePage.gameFindWord:
         _goTo(_EyePage.smart);
         return;
       case _EyePage.smart:
@@ -377,7 +456,15 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       case _EyePage.learn:
         _goTo(_EyePage.dashboard);
         return;
+      case _EyePage.learnVideos:
+        _goTo(_EyePage.learn);
+        return;
       case _EyePage.games:
+      case _EyePage.gamesMenu:
+      case _EyePage.gameWordBuilder:
+      case _EyePage.gamePictureMatch:
+      case _EyePage.gameSpellIt:
+      case _EyePage.gameFindWord:
         _goTo(_EyePage.dashboard);
         return;
       case _EyePage.smart:
@@ -406,27 +493,43 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
                 _EyePage.dashboard => _buildDashboard(),
                 _EyePage.communicate => _buildCommunicate(),
                 _EyePage.learn => _buildLearn(),
-                _EyePage.games => _buildGames(),
+                _EyePage.learnVideos => _buildLearnVideos(),
+                _EyePage.games => _buildGamesMenu(),
+                _EyePage.gamesMenu => _buildGamesMenu(),
+                _EyePage.gameWordBuilder => _buildWordBuilder(),
+                _EyePage.gamePictureMatch => _buildPictureMatch(),
+                _EyePage.gameSpellIt => _buildSpellIt(),
+                _EyePage.gameFindWord => _buildFindWord(),
                 _EyePage.smart => _buildSmartControl(),
               },
             ),
           ),
           Positioned(right: 10, top: 44, child: _buildDebugOverlay()),
           Positioned(
-            left: _cursorNorm.dx * MediaQuery.of(context).size.width - 11,
-            top: _cursorNorm.dy * MediaQuery.of(context).size.height - 11,
+            left: _cursorNorm.dx * MediaQuery.of(context).size.width - 20,
+            top: _cursorNorm.dy * MediaQuery.of(context).size.height - 20,
             child: IgnorePointer(
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.92),
-                  border: Border.all(color: _accent, width: 3),
-                  boxShadow: const [
-                    BoxShadow(color: _accent, blurRadius: 14, spreadRadius: 1),
-                  ],
-                ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: _dwellProgress,
+                    strokeWidth: 4,
+                    color: const Color(0xFFFF6A00),
+                  ),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.92),
+                      border: Border.all(color: _accent, width: 3),
+                      boxShadow: const [
+                        BoxShadow(color: _accent, blurRadius: 14, spreadRadius: 1),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -834,48 +937,16 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
         _sectionHeader('Learn'),
         const SizedBox(height: 10),
         Expanded(
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 6,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.2,
-            ),
-            itemBuilder: (context, index) {
-              return _focusable(
-                index: index,
-                child: GestureDetector(
-                  onTap: () => _showHint('Opened video ${index + 1}'),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _panel,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF2A3D61)),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.play_circle_fill_rounded,
-                          color: Color(0xFF40C4FF),
-                          size: 44,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Video ${index + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+          child: LearnSection(
+            focusableBuilder: _focusable,
+            focusStartIndex: 0,
+            focusIndex: _focusIndex,
+            onCategorySelected: (cat, videos) {
+              setState(() {
+                _selectedCategory = cat;
+                _selectedVideos = videos;
+                _goTo(_EyePage.learnVideos);
+              });
             },
           ),
         ),
@@ -885,114 +956,87 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     );
   }
 
-  Widget _buildGames() {
-    _focusCount = 4;
+  Widget _buildLearnVideos() {
+    _focusCount = 7;
     return Column(
       children: [
-        _sectionHeader('Games'),
+        _sectionHeader(_selectedCategory),
         const SizedBox(height: 10),
         Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: _focusable(
-                  index: 0,
-                  child: _gamePanel(
-                    title: 'Tap Target',
-                    color: const Color(0xFFFFB74D),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Stack(
-                          alignment: Alignment(
-                            (_targetPos.dx * 2) - 1,
-                            (_targetPos.dy * 2) - 1,
-                          ),
-                          children: [
-                            Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1B2335),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _targetHits += 1;
-                                  _targetPos = Offset(
-                                    0.2 + (Random().nextDouble() * 0.6),
-                                    0.2 + (Random().nextDouble() * 0.6),
-                                  );
-                                });
-                              },
-                              child: Container(
-                                width: 42,
-                                height: 42,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFFF7043),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Hits: $_targetHits',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _focusable(
-                  index: 1,
-                  child: _gamePanel(
-                    title: 'Reaction',
-                    color: const Color(0xFF81C784),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            if (!_reactionReady) return;
-                            setState(() {
-                              _reactionHits += 1;
-                              _reactionReady = false;
-                            });
-                          },
-                          child: Container(
-                            width: 98,
-                            height: 98,
-                            decoration: BoxDecoration(
-                              color: _reactionReady
-                                  ? const Color(0xFF66BB6A)
-                                  : const Color(0xFF455A64),
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Score: $_reactionHits',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          child: LearnVideoPage(
+            title: _selectedCategory,
+            videos: _selectedVideos,
+            focusableBuilder: _focusable,
+            focusStartIndex: 0,
+            focusIndex: _focusIndex,
+            onBack: () => _goTo(_EyePage.learn),
           ),
         ),
         const SizedBox(height: 12),
         _bottomNav(),
       ],
+    );
+  }
+
+  Widget _buildGamesMenu() {
+    _focusCount = 4;
+    return GamesMenu(
+      focusableBuilder: _focusable,
+      focusIndex: _focusIndex,
+      onGameSelected: (idx) {
+        if (idx == 0) _goTo(_EyePage.gameWordBuilder);
+        if (idx == 1) _goTo(_EyePage.gamePictureMatch);
+        if (idx == 2) _goTo(_EyePage.gameSpellIt);
+        if (idx == 3) _goTo(_EyePage.gameFindWord);
+      },
+    );
+  }
+
+  Widget _buildWordBuilder() {
+    _focusCount = 10;
+    return GameWordBuilder(
+      focusableBuilder: _focusable,
+      focusIndex: _focusIndex,
+      onWin: () {
+        _showHint('Great Job! Word Completed.');
+        _goTo(_EyePage.gamesMenu);
+      },
+    );
+  }
+
+  Widget _buildPictureMatch() {
+    _focusCount = 12;
+    return GamePictureMatch(
+      focusableBuilder: _focusable,
+      focusIndex: _focusIndex,
+      onWin: () {
+        _showHint('Memory Mastered!');
+        _goTo(_EyePage.gamesMenu);
+      },
+    );
+  }
+
+  Widget _buildSpellIt() {
+    _focusCount = 26;
+    return GameSpellIt(
+      focusableBuilder: _focusable,
+      focusIndex: _focusIndex,
+      onWin: () {
+        _showHint('Spelling Perfected!');
+        _goTo(_EyePage.gamesMenu);
+      },
+    );
+  }
+
+  Widget _buildFindWord() {
+    _focusCount = 16;
+    return GameFindWord(
+      focusableBuilder: _focusable,
+      focusIndex: _focusIndex,
+      onWin: () {
+        _showHint('Word Found!');
+        _goTo(_EyePage.gamesMenu);
+      },
     );
   }
 

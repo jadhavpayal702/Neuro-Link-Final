@@ -165,7 +165,7 @@ class AiService {
     defaultValue: '',
   );
 
-  static const String _fallbackApiKey = "AIzaSyA75D4JOBuAddeW0lI3JrnQ8LipiggBFAk";
+  static const String _fallbackApiKey = "AIzaSyCFyZqi6oLPoaWJRFgzS0-mySxmzFZtc08";
 
   String get _apiKey =>
       _apiKeyFromEnv.isNotEmpty ? _apiKeyFromEnv : _fallbackApiKey;
