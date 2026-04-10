@@ -137,6 +137,7 @@ class _BrandHeader extends StatelessWidget {
             ),
           ),
         ),
+
         const SizedBox(height: 20),
         const Text(
           'NeuroLink',

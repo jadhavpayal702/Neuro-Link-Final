@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../screens/profile_screen.dart';
 
@@ -14,6 +15,7 @@ class QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final uid = Provider.of<String>(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -54,7 +56,9 @@ class QuickActions extends StatelessWidget {
                   label: 'Profile',
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => ProfileScreen(uid: uid),
+                      ),
                     );
                   },
                   color: const Color(0xFFEFF6FF),

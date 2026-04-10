@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 import 'vocal-mode/controllers/neurobot_controller.dart';
 import 'vocal-mode/controllers/vocal_controller.dart';
 import 'vocal-mode/services/ai_service.dart';
@@ -17,8 +17,17 @@ import 'vocal-mode/screens/navigation_screen.dart';
 import 'vocal-mode/screens/play_screen.dart';
 import 'vocal-mode/screens/vocal_home.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+      apiKey: "AIzaSyCUNoMNfUosoS8KYJYQSvnB1YItNutNtw4",
+      appId: "1:488503581921:android:3b8b99035fbbcf0f902ba0",
+      messagingSenderId: "488503581921",
+      projectId: "neurolink-1a56c",
+      storageBucket: "neurolink-1a56c.firebasestorage.app",
+    ),
+  );
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
