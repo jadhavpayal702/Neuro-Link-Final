@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neuro_link/map/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../screens/profile_screen.dart';
@@ -45,7 +46,13 @@ class QuickActions extends StatelessWidget {
                 child: _Q(
                   icon: '📍',
                   label: 'Location',
-                  onTap: () {}, // Noop for now
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => HomeScreen(),
+                      ),
+                    );
+                  }, // Noop for now
                   color: const Color(0xFFF0FDF4),
                 ),
               ),
