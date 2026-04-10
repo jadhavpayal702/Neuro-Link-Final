@@ -85,8 +85,8 @@ class GazePipeline {
     final dy = (gazeNorm.dy - center.dy) / spanY;
 
     return Offset(
-      (0.5 + dx * 0.32).clamp(0.03, 0.97),
-      (0.5 + dy * 0.32).clamp(0.04, 0.96),
+      (0.5 + dx * 0.5).clamp(0.02, 0.98),
+      (0.5 + dy * 0.5).clamp(0.02, 0.98),
     );
   }
-}
+}
