@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:neuro_link/eye-mode/eye_tracking/gaze_blink_pipeline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:neuro_link/eye-mode/services/facemesh_stub.dart';
+import 'package:neuro_link/eye-mode/services/facemesh.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum _EyePage { calibration, dashboard, communicate, learn, games, smart }
@@ -42,7 +42,6 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   late final FlutterTts _tts;
   bool _isSpeaking = false;
   int _debugFrameCount = 0;
-  int _lastLoggedFaceCount = -1;
 
   // Calibration baseline capture.
   final Map<String, Offset> _calibration = {};
@@ -122,6 +121,11 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
         final double x = json['x']?.toDouble() ?? 0.5;
         final double y = json['y']?.toDouble() ?? 0.5;
         final String blinkStr = json['blink'] ?? 'none';
+
+        _debugFrameCount++;
+        if (_debugFrameCount % 30 == 0) {
+          debugPrint('[EyeTrack] frame=$_debugFrameCount  gaze=($x, $y)  blink=$blinkStr');
+        }
 
         final gazeNorm = Offset(x, y);
         final mapped = GazePipeline.mapGazeToCursor(
@@ -445,6 +449,8 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
           children: [
             Text('MediaPipe FaceMesh Active'),
             Text('Face: ${_faceDetected ? "YES" : "NO"}'),
+            Text('Frames: $_debugFrameCount'),
+            Text('Raw gaze: ${_gazePipeline.raw.dx.toStringAsFixed(3)}, ${_gazePipeline.raw.dy.toStringAsFixed(3)}'),
             Text('Gaze conf: ${_lastGazeConfidence.toStringAsFixed(2)}'),
             Text('Blink: $_blinkStatus'),
             Text(
