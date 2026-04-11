@@ -19,8 +19,10 @@ import 'package:neuro_link/eye-mode/screens/game_picture_match.dart';
 import 'package:neuro_link/eye-mode/screens/game_spell_it.dart';
 import 'package:neuro_link/eye-mode/screens/game_find_word.dart';
 import 'package:neuro_link/eye-mode/models/game_models.dart';
+import 'package:neuro_link/eye-mode/screens/smart_control_page.dart';
 
 enum _EyePage {
+  instructions,
   calibration,
   dashboard,
   communicate,
@@ -44,7 +46,7 @@ class EyeUnlockScreen extends StatefulWidget {
 
 class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     with SingleTickerProviderStateMixin {
-  _EyePage _page = _EyePage.calibration;
+  _EyePage _page = _EyePage.instructions;
   late final AnimationController _dotController;
   String _typedText = '';
   bool _lightOn = false;
@@ -59,6 +61,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   List<Video> _selectedVideos = [];
 
   late final GazePipeline _gazePipeline;
+  final ValueNotifier<int?> _selectTrigger = ValueNotifier<int?>(null);
   bool _faceDetected = false;
   String _blinkStatus = 'OPEN';
   double _lastGazeConfidence = 0;
@@ -69,9 +72,6 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   late final FlutterTts _tts;
   bool _isSpeaking = false;
   int _lastFocusIndex = -1;
-  final Stopwatch _dwellStopwatch = Stopwatch();
-  double _dwellProgress = 0.0;
-  Timer? _dwellUpdateTimer;
   int _debugFrameCount = 0;
 
   // Calibration baseline capture.
@@ -91,7 +91,8 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
 
   static const _bg = Color(0xFF0B1220);
   static const _panel = Color(0xFF111C30);
-  static const _accent = Color(0xFF36C2FF);
+  static const _accent = Color(0xFFFF6A00); // Futuristic Orange
+  static const _blueAccent = Color(0xFF36C2FF);
 
   @override
   void initState() {
@@ -122,26 +123,11 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       setState(() => _reactionReady = !_reactionReady);
     });
     unawaited(_initCamera());
-    _dwellUpdateTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (!mounted) return;
-      if (_dwellStopwatch.isRunning) {
-        setState(() {
-          _dwellProgress = (_dwellStopwatch.elapsedMilliseconds / 1500).clamp(0.0, 1.0);
-        });
-        if (_dwellProgress >= 1.0) {
-          _dwellStopwatch.reset();
-          _dwellStopwatch.stop();
-          _dwellProgress = 0.0;
-          _activateFocused();
-        }
-      }
-    });
   }
 
   @override
   void dispose() {
     stopFaceMeshNative();
-    _dwellUpdateTimer?.cancel();
     _tts.stop();
     _dotController.dispose();
     super.dispose();
@@ -272,11 +258,6 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     }
     if (bestIdx != null && bestIdx != _focusIndex) {
       setState(() => _focusIndex = bestIdx!);
-
-      // Reset dwell timer on focus change
-      _dwellStopwatch.reset();
-      _dwellStopwatch.start();
-      _dwellProgress = 0.0;
     }
   }
 
@@ -320,17 +301,20 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       case _EyePage.gamePictureMatch:
       case _EyePage.gameSpellIt:
       case _EyePage.gameFindWord:
-        // Clicks handled by the game widgets via onWin or direct onTap
+        _selectTrigger.value = _focusIndex;
+        // Reset after trigger so subsequent clicks on same item work
+        Future.delayed(const Duration(milliseconds: 50), () => _selectTrigger.value = null);
         break;
       case _EyePage.smart:
-        if (_focusIndex == 0) _lightOn = !_lightOn;
-        if (_focusIndex == 1) _fanOn = !_fanOn;
-        if (_focusIndex == 2) _sosArmed = true;
-        if (_focusIndex == 3) _goPrevModule();
-        if (_focusIndex == 4) _goNextModule();
+        _selectTrigger.value = _focusIndex;
+        // Reset after trigger
+        Future.delayed(const Duration(milliseconds: 50), () => _selectTrigger.value = null);
         setState(() {});
       case _EyePage.calibration:
         _captureCalibrationStep();
+      case _EyePage.instructions:
+        _goTo(_EyePage.dashboard);
+        _focusIndex = 0;
     }
   }
 
@@ -437,11 +421,12 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       case _EyePage.smart:
         _goTo(_EyePage.communicate);
         return;
+      case _EyePage.instructions:
       case _EyePage.calibration:
       case _EyePage.dashboard:
         _goTo(_EyePage.dashboard);
         setState(() {
-          _focusCount = 4;
+          _focusCount = 5;
           _focusIndex = 0;
         });
         return;
@@ -470,6 +455,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       case _EyePage.smart:
         _goTo(_EyePage.dashboard);
         return;
+      case _EyePage.instructions:
       case _EyePage.calibration:
       case _EyePage.dashboard:
         if (Navigator.of(context).canPop()) {
@@ -489,6 +475,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: switch (_page) {
+                _EyePage.instructions => _buildInstructions(),
                 _EyePage.calibration => _buildCalibration(),
                 _EyePage.dashboard => _buildDashboard(),
                 _EyePage.communicate => _buildCommunicate(),
@@ -500,7 +487,23 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
                 _EyePage.gamePictureMatch => _buildPictureMatch(),
                 _EyePage.gameSpellIt => _buildSpellIt(),
                 _EyePage.gameFindWord => _buildFindWord(),
-                _EyePage.smart => _buildSmartControl(),
+                _EyePage.smart => SmartControlPage(
+                  focusableBuilder: _focusable,
+                  focusIndex: _focusIndex,
+                  selectTrigger: _selectTrigger,
+                  lightOn: _lightOn,
+                  fanOn: _fanOn,
+                  sosArmed: _sosArmed,
+                  onToggleLight: () => setState(() => _lightOn = !_lightOn),
+                  onToggleFan: () => setState(() => _fanOn = !_fanOn),
+                  onTriggerSOS: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('SOS activated')),
+                    );
+                  },
+                  sectionHeader: _sectionHeader('Smart Control'),
+                  bottomNav: _bottomNav(),
+                ),
               },
             ),
           ),
@@ -512,11 +515,6 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    value: _dwellProgress,
-                    strokeWidth: 4,
-                    color: const Color(0xFFFF6A00),
-                  ),
                   Container(
                     width: 24,
                     height: 24,
@@ -561,6 +559,58 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInstructions() {
+    _focusCount = 1;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text(
+          'How to Use Eye Unlock',
+          style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 30),
+        _instructionStep(Icons.visibility_outlined, 'Move your eyes to control the cursor'),
+        _instructionStep(Icons.ads_click_outlined, 'Blink to select any button'),
+        _instructionStep(Icons.light_mode_outlined, 'Ensure good lighting for better accuracy'),
+        const SizedBox(height: 40),
+        SizedBox(
+          width: 280,
+          child: _focusable(
+            index: 0,
+            child: _largeButton(
+              label: 'Get Started',
+              color: _accent,
+              textColor: Colors.black,
+              onTap: () => _goTo(_EyePage.dashboard),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _instructionStep(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: _accent.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: _accent, size: 28),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(color: Colors.white, fontSize: 18, height: 1.4),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -678,7 +728,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   }
 
   Widget _buildDashboard() {
-    _focusCount = 4;
+    _focusCount = 5;
     return Column(
       children: [
         const Text(
@@ -735,6 +785,18 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
                 ),
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: _focusable(
+            index: 4,
+            child: _largeButton(
+              label: 'Recalibrate Tracker',
+              color: const Color(0xFF2B3F61),
+              onTap: () => _goTo(_EyePage.calibration),
+            ),
           ),
         ),
       ],
@@ -997,6 +1059,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     return GameWordBuilder(
       focusableBuilder: _focusable,
       focusIndex: _focusIndex,
+      selectTrigger: _selectTrigger,
       onWin: () {
         _showHint('Great Job! Word Completed.');
         _goTo(_EyePage.gamesMenu);
@@ -1009,6 +1072,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     return GamePictureMatch(
       focusableBuilder: _focusable,
       focusIndex: _focusIndex,
+      selectTrigger: _selectTrigger,
       onWin: () {
         _showHint('Memory Mastered!');
         _goTo(_EyePage.gamesMenu);
@@ -1021,6 +1085,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     return GameSpellIt(
       focusableBuilder: _focusable,
       focusIndex: _focusIndex,
+      selectTrigger: _selectTrigger,
       onWin: () {
         _showHint('Spelling Perfected!');
         _goTo(_EyePage.gamesMenu);
@@ -1033,6 +1098,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     return GameFindWord(
       focusableBuilder: _focusable,
       focusIndex: _focusIndex,
+      selectTrigger: _selectTrigger,
       onWin: () {
         _showHint('Word Found!');
         _goTo(_EyePage.gamesMenu);
@@ -1040,65 +1106,6 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     );
   }
 
-  Widget _buildSmartControl() {
-    _focusCount = 5;
-    return Column(
-      children: [
-        _sectionHeader('Smart Control'),
-        const SizedBox(height: 10),
-        Expanded(
-          child: Column(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _focusable(
-                        index: 0,
-                        child: _toggleTile(
-                          label: 'Light',
-                          enabled: _lightOn,
-                          onTap: () => setState(() => _lightOn = !_lightOn),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _focusable(
-                        index: 1,
-                        child: _toggleTile(
-                          label: 'Fan',
-                          enabled: _fanOn,
-                          onTap: () => setState(() => _fanOn = !_fanOn),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: _focusable(
-                  index: 2,
-                  child: _largeButton(
-                    label: _sosArmed ? 'SOS Armed' : 'SOS Emergency',
-                    color: const Color(0xFFE53935),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('SOS activated')),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _bottomNav(),
-      ],
-    );
-  }
 
   Widget _sectionHeader(String title) {
     return Row(
@@ -1191,36 +1198,6 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     );
   }
 
-  Widget _toggleTile({
-    required String label,
-    required bool enabled,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        decoration: BoxDecoration(
-          color: enabled ? const Color(0xFF1B5E20) : _panel,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: enabled ? const Color(0xFF7CFF8A) : const Color(0xFF2A3D61),
-            width: 2,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            '$label ${enabled ? 'ON' : 'OFF'}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _keyButton(String label, {VoidCallback? onTap}) {
     return SizedBox(
@@ -1308,14 +1285,24 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     final focused = _focusIndex == index;
     return AnimatedContainer(
       key: key,
-      duration: const Duration(milliseconds: 120),
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         border: focused
-            ? Border.all(color: const Color(0xFFFFD54F), width: 2.4)
-            : null,
+            ? Border.all(color: _accent, width: 3.5)
+            : Border.all(color: Colors.transparent, width: 3.5),
+        boxShadow: focused
+            ? [
+                BoxShadow(
+                  color: _accent.withValues(alpha: 0.25),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                )
+              ]
+            : [],
       ),
-      padding: focused ? const EdgeInsets.all(2) : EdgeInsets.zero,
+      padding: const EdgeInsets.all(2),
       child: child,
     );
   }

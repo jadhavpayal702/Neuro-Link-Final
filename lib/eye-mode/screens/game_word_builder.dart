@@ -8,12 +8,14 @@ typedef FocusableBuilder = Widget Function({required int index, required Widget 
 class GameWordBuilder extends StatefulWidget {
   final FocusableBuilder focusableBuilder;
   final int focusIndex;
+  final ValueNotifier<int?> selectTrigger;
   final VoidCallback onWin;
 
   const GameWordBuilder({
     super.key,
     required this.focusableBuilder,
     required this.focusIndex,
+    required this.selectTrigger,
     required this.onWin,
   });
 
@@ -34,6 +36,22 @@ class _GameWordBuilderState extends State<GameWordBuilder> {
     super.initState();
     _startAnimation();
     _generateBubbles();
+    widget.selectTrigger.addListener(_onRemoteSelect);
+  }
+
+  void _onRemoteSelect() {
+    if (!mounted || widget.selectTrigger.value == null) return;
+    final idx = widget.selectTrigger.value!;
+    if (idx >= 0 && idx < bubbles.length) {
+      _onLetterSelect(idx);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.selectTrigger.removeListener(_onRemoteSelect);
+    animationTimer?.cancel();
+    super.dispose();
   }
 
   void _generateBubbles() {
@@ -63,12 +81,6 @@ class _GameWordBuilderState extends State<GameWordBuilder> {
         }
       });
     });
-  }
-
-  @override
-  void dispose() {
-    animationTimer?.cancel();
-    super.dispose();
   }
 
   void _onLetterSelect(int index) {

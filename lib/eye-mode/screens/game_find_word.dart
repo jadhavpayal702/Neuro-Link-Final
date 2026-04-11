@@ -5,12 +5,14 @@ typedef FocusableBuilder = Widget Function({required int index, required Widget 
 class GameFindWord extends StatefulWidget {
   final FocusableBuilder focusableBuilder;
   final int focusIndex;
+  final ValueNotifier<int?> selectTrigger;
   final VoidCallback onWin;
 
   const GameFindWord({
     super.key,
     required this.focusableBuilder,
     required this.focusIndex,
+    required this.selectTrigger,
     required this.onWin,
   });
 
@@ -27,6 +29,26 @@ class _GameFindWordState extends State<GameFindWord> {
   ];
   final String target = "HELP";
   List<int> selectedIndices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.selectTrigger.addListener(_onRemoteSelect);
+  }
+
+  void _onRemoteSelect() {
+    if (!mounted || widget.selectTrigger.value == null) return;
+    final idx = widget.selectTrigger.value!;
+    if (idx >= 0 && idx < grid.length) {
+      _onCellSelect(idx);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.selectTrigger.removeListener(_onRemoteSelect);
+    super.dispose();
+  }
 
   void _onCellSelect(int index) {
     setState(() {

@@ -5,12 +5,14 @@ typedef FocusableBuilder = Widget Function({required int index, required Widget 
 class GameSpellIt extends StatefulWidget {
   final FocusableBuilder focusableBuilder;
   final int focusIndex;
+  final ValueNotifier<int?> selectTrigger;
   final VoidCallback onWin;
 
   const GameSpellIt({
     super.key,
     required this.focusableBuilder,
     required this.focusIndex,
+    required this.selectTrigger,
     required this.onWin,
   });
 
@@ -27,6 +29,26 @@ class _GameSpellItState extends State<GameSpellIt> {
   int currentIdx = 0;
   String currentInput = "";
   final List<String> letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+
+  @override
+  void initState() {
+    super.initState();
+    widget.selectTrigger.addListener(_onRemoteSelect);
+  }
+
+  void _onRemoteSelect() {
+    if (!mounted || widget.selectTrigger.value == null) return;
+    final idx = widget.selectTrigger.value!;
+    if (idx >= 0 && idx < letters.length) {
+      _onLetterSelect(letters[idx]);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.selectTrigger.removeListener(_onRemoteSelect);
+    super.dispose();
+  }
 
   void _onLetterSelect(String letter) {
     final target = puzzles[currentIdx]['word'] as String;

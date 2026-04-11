@@ -7,12 +7,14 @@ typedef FocusableBuilder = Widget Function({required int index, required Widget 
 class GamePictureMatch extends StatefulWidget {
   final FocusableBuilder focusableBuilder;
   final int focusIndex;
+  final ValueNotifier<int?> selectTrigger;
   final VoidCallback onWin;
 
   const GamePictureMatch({
     super.key,
     required this.focusableBuilder,
     required this.focusIndex,
+    required this.selectTrigger,
     required this.onWin,
   });
 
@@ -34,6 +36,21 @@ class _GamePictureMatchState extends State<GamePictureMatch> {
   void initState() {
     super.initState();
     _initGame();
+    widget.selectTrigger.addListener(_onRemoteSelect);
+  }
+
+  void _onRemoteSelect() {
+    if (!mounted || widget.selectTrigger.value == null) return;
+    final idx = widget.selectTrigger.value!;
+    if (idx >= 0 && idx < cards.length) {
+      _onCardSelect(idx);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.selectTrigger.removeListener(_onRemoteSelect);
+    super.dispose();
   }
 
   void _initGame() {
