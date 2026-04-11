@@ -47,10 +47,10 @@ class LearnSection extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             itemCount: categories.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.1,
+              crossAxisCount: 3, // Increased from 2
+              crossAxisSpacing: 12, // Tighter spacing
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.75, // Narrower for 3 columns
             ),
             itemBuilder: (context, index) {
               final cat = categories[index];

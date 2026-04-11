@@ -33,6 +33,24 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 36),
                 _ModeCard(
                   number: '1',
+                  numberGradient: const [Color(0xFFF97316), Color(0xFFC2410C)],
+                  title: 'Deaf Mode',
+                  titleColor: const Color(0xFFC2410C),
+                  description: 'Visual & Text-Based Interaction for Deaf Users',
+                  trailingIcon: Icons.back_hand_outlined,
+                  trailingColor: const Color(0xFFEA580C),
+                  cardTint: const Color(0xFFFFF7ED),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const DeafModeHome(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 18),
+                _ModeCard(
+                  number: '2',
                   numberGradient: const [Color(0xFF2B65EC), Color(0xFF1547D1)],
                   title: 'Vocal Mode',
                   titleColor: const Color(0xFF1547D1),
@@ -48,7 +66,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _ModeCard(
-                  number: '2',
+                  number: '3',
                   numberGradient: const [Color(0xFF22C55E), Color(0xFF15803D)],
                   title: 'EyeUnlock Mode',
                   titleColor: const Color(0xFF15803D),
@@ -61,24 +79,6 @@ class HomeScreen extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const EyeUnlockScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 18),
-                _ModeCard(
-                  number: '3',
-                  numberGradient: const [Color(0xFFF97316), Color(0xFFC2410C)],
-                  title: 'Deaf Mode',
-                  titleColor: const Color(0xFFC2410C),
-                  description: 'Visual & Text-Based Interaction for Deaf Users',
-                  trailingIcon: Icons.back_hand_outlined,
-                  trailingColor: const Color(0xFFEA580C),
-                  cardTint: const Color(0xFFFFF7ED),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const DeafModeHome(),
                       ),
                     );
                   },

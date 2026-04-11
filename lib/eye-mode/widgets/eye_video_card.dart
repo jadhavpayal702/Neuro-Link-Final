@@ -20,19 +20,19 @@ class EyeVideoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 4), // Reduced from 8
       decoration: BoxDecoration(
-        color: const Color(0xFF111C30),
-        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(0.04), // Glass style
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isFocused ? const Color(0xFFFFD54F) : const Color(0xFF2A3D61),
-          width: isFocused ? 2.5 : 1.2,
+          color: isFocused ? const Color(0xFFFF6A00) : Colors.white.withOpacity(0.06), // Accent or subtle glass
+          width: isFocused ? 2.0 : 1.0,
         ),
         boxShadow: isFocused
             ? [
                 BoxShadow(
-                  color: const Color(0xFFFFD54F).withValues(alpha: 0.25),
-                  blurRadius: 12,
+                  color: const Color(0xFFFF6A00).withValues(alpha: 0.2),
+                  blurRadius: 10,
                   spreadRadius: 1,
                 )
               ]
@@ -42,25 +42,25 @@ class EyeVideoCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12), // Reduced from 16
             child: Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1A2335),
+                  width: 42, // Reduced from 50
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.play_arrow_rounded,
-                    color: Color(0xFF36C2FF),
-                    size: 32,
+                    color: Color(0xFFFF6A00),
+                    size: 24, // Reduced from 32
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,35 +71,35 @@ class EyeVideoCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 15, // Reduced from 17
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         description,
-                        maxLines: 2,
+                        maxLines: 1, // Reduced from 2 for compactness
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 13,
-                          height: 1.4,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.5),
+                          fontSize: 11, // Reduced from 13
+                          height: 1.3,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.remove_red_eye_outlined,
-                            size: 14,
-                            color: Color(0xFF64748B),
+                          Icon(
+                            Icons.remove_red_eye_rounded,
+                            size: 10,
+                            color: Colors.white.withOpacity(0.35),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             views,
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 12,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.35),
+                              fontSize: 10, // Reduced from 12
                               fontWeight: FontWeight.w500,
                             ),
                           ),

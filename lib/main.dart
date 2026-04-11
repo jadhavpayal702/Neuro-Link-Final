@@ -16,6 +16,7 @@ import 'vocal-mode/screens/learn_screen.dart';
 import 'vocal-mode/screens/navigation_screen.dart';
 import 'vocal-mode/screens/play_screen.dart';
 import 'vocal-mode/screens/vocal_home.dart';
+import 'splashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,7 +85,8 @@ class NeuroLinkApp extends StatelessWidget {
             ),
             initialRoute: '/',
             routes: {
-              '/': (context) => const HomeScreen(),
+              '/': (context) => const SplashScreen(),
+              '/home': (context) => const HomeScreen(),
               VoiceNavigationService.vocalHome: (context) =>
                   const VocalHomeScreen(),
               VoiceNavigationService.learn: (context) => const LearnScreen(),

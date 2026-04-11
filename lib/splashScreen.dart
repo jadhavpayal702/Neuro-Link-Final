@@ -32,10 +32,10 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _handleNavigation() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 5));
     if (!mounted) return;
 
-    // TODO: Add navigation
+    Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override

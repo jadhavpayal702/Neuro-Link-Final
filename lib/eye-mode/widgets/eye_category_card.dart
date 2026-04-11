@@ -18,24 +18,10 @@ class EyeCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+    return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF111C30),
+        color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isFocused ? const Color(0xFFFFD54F) : const Color(0xFF2A3D61),
-          width: isFocused ? 3 : 1.5,
-        ),
-        boxShadow: isFocused
-            ? [
-                BoxShadow(
-                  color: const Color(0xFFFFD54F).withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                )
-              ]
-            : [],
       ),
       child: Material(
         color: Colors.transparent,
@@ -43,26 +29,35 @@ class EyeCategoryCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, size: 40, color: color),
+                  child: Icon(icon, size: 24, color: color), // Reduced from 32
                 ),
-                const SizedBox(height: 14),
+                const Spacer(),
                 Text(
                   title,
-                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 16, // Reduced from 20
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Explore guides',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 11, // Reduced from 13
                   ),
                 ),
               ],

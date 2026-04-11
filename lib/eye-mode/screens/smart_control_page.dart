@@ -39,21 +39,13 @@ class SmartControlPage extends StatefulWidget {
 }
 
 class _SmartControlPageState extends State<SmartControlPage> {
-  // ✅ FIXED IoT FUNCTION
   Future<void> _toggleLightIoT(bool currentState) async {
-    const String baseUrl = "http://172.20.10.2"; // SAME as Deaf Mode
-
+    const String baseUrl = "http://172.20.10.2";
     try {
-      final url = currentState
-          ? "$baseUrl/off"   // 🔥 FIXED
-          : "$baseUrl/on";   // 🔥 FIXED
-
+      final url = currentState ? "$baseUrl/off" : "$baseUrl/on";
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
         debugPrint("ESP Response: ${response.body}");
-      } else {
-        debugPrint("ESP Error: ${response.statusCode}");
       }
     } catch (e) {
       debugPrint("IoT Error: $e");
@@ -75,18 +67,12 @@ class _SmartControlPageState extends State<SmartControlPage> {
   void _onRemoteSelect() {
     if (!mounted || widget.selectTrigger.value == null) return;
     final idx = widget.selectTrigger.value!;
-    
-    // index 0 -> Light
     if (idx == 0) {
       _toggleLightIoT(widget.lightOn);
       widget.onToggleLight();
-    }
-    // index 1 -> Fan
-    else if (idx == 1) {
+    } else if (idx == 1) {
       widget.onToggleFan();
-    }
-    // index 2 -> SOS
-    else if (idx == 2) {
+    } else if (idx == 2) {
       widget.onTriggerSOS();
     }
   }
@@ -96,7 +82,7 @@ class _SmartControlPageState extends State<SmartControlPage> {
     return Column(
       children: [
         widget.sectionHeader,
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Expanded(
           child: Column(
             children: [
@@ -110,14 +96,13 @@ class _SmartControlPageState extends State<SmartControlPage> {
                           label: 'Light',
                           enabled: widget.lightOn,
                           onTap: () async {
-                            debugPrint("LIGHT TRIGGERED"); 
                             await _toggleLightIoT(widget.lightOn);
                             widget.onToggleLight();
                           },
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: widget.focusableBuilder(
                         index: 1,
@@ -131,7 +116,7 @@ class _SmartControlPageState extends State<SmartControlPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               Expanded(
                 child: widget.focusableBuilder(
                   index: 2,
@@ -156,25 +141,43 @@ class _SmartControlPageState extends State<SmartControlPage> {
     required bool enabled,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        decoration: BoxDecoration(
-          color: enabled ? const Color(0xFF1B5E20) : const Color(0xFF111C30),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: enabled ? const Color(0xFF7CFF8A) : const Color(0xFF2A3D61),
-            width: 2,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            '$label ${enabled ? 'ON' : 'OFF'}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: enabled ? Colors.green.withOpacity(0.12) : Colors.white.withOpacity(0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    label == 'Light' ? Icons.lightbulb_outline_rounded : Icons.air_rounded,
+                    size: 32, // Reduced from 48
+                    color: enabled ? Colors.green : Colors.white24,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$label ${enabled ? 'ON' : 'OFF'}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16, // Reduced from 22
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -188,23 +191,20 @@ class _SmartControlPageState extends State<SmartControlPage> {
     required VoidCallback onTap,
   }) {
     return SizedBox(
-      height: 64,
+      height: 64, // Reduced from 80
+      width: double.infinity,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(20),
           ),
+          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        child: Text(label),
       ),
     );
   }

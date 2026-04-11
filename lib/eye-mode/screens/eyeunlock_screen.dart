@@ -89,10 +89,11 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     'No',
   ];
 
-  static const _bg = Color(0xFF0B1220);
-  static const _panel = Color(0xFF111C30);
+  static const _bg = Color(0xFF0F0F0F); // Deep Charcoal
+  static const _surface = Color(0xFF1A1A1A);
   static const _accent = Color(0xFFFF6A00); // Futuristic Orange
-  static const _blueAccent = Color(0xFF36C2FF);
+  static const _accentBlue = Color(0xFF36C2FF);
+  static const _success = Color(0xFF22C55E);
 
   @override
   void initState() {
@@ -475,34 +476,36 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: switch (_page) {
-                _EyePage.instructions => _buildInstructions(),
-                _EyePage.calibration => _buildCalibration(),
-                _EyePage.dashboard => _buildDashboard(),
-                _EyePage.communicate => _buildCommunicate(),
-                _EyePage.learn => _buildLearn(),
-                _EyePage.learnVideos => _buildLearnVideos(),
-                _EyePage.games => _buildGamesMenu(),
-                _EyePage.gamesMenu => _buildGamesMenu(),
+                _EyePage.instructions => _buildCenteredWrapper(_buildInstructions()),
+                _EyePage.calibration => _buildCenteredWrapper(_buildCalibration()),
+                _EyePage.dashboard => _buildCenteredWrapper(_buildDashboard()),
+                _EyePage.communicate => _buildCenteredWrapper(_buildCommunicate()),
+                _EyePage.learn => _buildCenteredWrapper(_buildLearn()),
+                _EyePage.learnVideos => _buildCenteredWrapper(_buildLearnVideos()),
+                _EyePage.games => _buildCenteredWrapper(_buildGamesMenu()),
+                _EyePage.gamesMenu => _buildCenteredWrapper(_buildGamesMenu()),
                 _EyePage.gameWordBuilder => _buildWordBuilder(),
                 _EyePage.gamePictureMatch => _buildPictureMatch(),
                 _EyePage.gameSpellIt => _buildSpellIt(),
                 _EyePage.gameFindWord => _buildFindWord(),
-                _EyePage.smart => SmartControlPage(
-                  focusableBuilder: _focusable,
-                  focusIndex: _focusIndex,
-                  selectTrigger: _selectTrigger,
-                  lightOn: _lightOn,
-                  fanOn: _fanOn,
-                  sosArmed: _sosArmed,
-                  onToggleLight: () => setState(() => _lightOn = !_lightOn),
-                  onToggleFan: () => setState(() => _fanOn = !_fanOn),
-                  onTriggerSOS: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('SOS activated')),
-                    );
-                  },
-                  sectionHeader: _sectionHeader('Smart Control'),
-                  bottomNav: _bottomNav(),
+                _EyePage.smart => _buildCenteredWrapper(
+                  SmartControlPage(
+                    focusableBuilder: _focusable,
+                    focusIndex: _focusIndex,
+                    selectTrigger: _selectTrigger,
+                    lightOn: _lightOn,
+                    fanOn: _fanOn,
+                    sosArmed: _sosArmed,
+                    onToggleLight: () => setState(() => _lightOn = !_lightOn),
+                    onToggleFan: () => setState(() => _fanOn = !_fanOn),
+                    onTriggerSOS: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('SOS activated')),
+                      );
+                    },
+                    sectionHeader: _sectionHeader('Smart Control'),
+                    bottomNav: _bottomNav(),
+                  ),
                 ),
               },
             ),
@@ -518,12 +521,42 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
                   Container(
                     width: 24,
                     height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.92),
-                      border: Border.all(color: _accent, width: 3),
-                      boxShadow: const [
-                        BoxShadow(color: _accent, blurRadius: 14, spreadRadius: 1),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Pulse Halo
+                        AnimatedBuilder(
+                          animation: _dotController,
+                          builder: (context, child) {
+                            return Container(
+                              width: 38 + (sin(_dotController.value * 2 * pi) * 6),
+                              height: 38 + (sin(_dotController.value * 2 * pi) * 6),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: _accent.withOpacity(0.4),
+                                  width: 2,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        // Sharp Center
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: _accent.withOpacity(0.6),
+                                blurRadius: 15,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -570,15 +603,35 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       children: [
         const Text(
           'How to Use Eye Unlock',
-          style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 32, // Reduced from 48
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
         ),
-        const SizedBox(height: 30),
-        _instructionStep(Icons.visibility_outlined, 'Move your eyes to control the cursor'),
-        _instructionStep(Icons.ads_click_outlined, 'Blink to select any button'),
-        _instructionStep(Icons.light_mode_outlined, 'Ensure good lighting for better accuracy'),
-        const SizedBox(height: 40),
+        const SizedBox(height: 8),
+        Text(
+          'Professional hands-free interface powered by NeuroLink',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+            fontSize: 15, // Reduced from 18
+          ),
+        ),
+        const SizedBox(height: 50),
+        Wrap(
+          spacing: 16, // Reduced from 24
+          runSpacing: 16,
+          alignment: WrapAlignment.center,
+          children: [
+            _modernInstructionStep(Icons.visibility_rounded, 'Precision Gaze', 'Move your eyes to control the cursor position.'),
+            _modernInstructionStep(Icons.ads_click_rounded, 'Single Blink', 'A quick blink triggers the selection on focused elements.'),
+            _modernInstructionStep(Icons.sensors_rounded, 'Environment', 'Ensure your face is well-lit for optimal results.'),
+          ],
+        ),
+        const SizedBox(height: 40), // Reduced from 60
         SizedBox(
-          width: 280,
+          width: 260, // Reduced from 320
           child: _focusable(
             index: 0,
             child: _largeButton(
@@ -590,6 +643,34 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _modernInstructionStep(IconData icon, String title, String desc) {
+    return Container(
+      width: 240, // Reduced from 280
+      padding: const EdgeInsets.all(20), // Reduced from 24
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _accent.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: _accent, size: 28), // Reduced from 32
+          ),
+          const SizedBox(height: 16),
+          Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)), // Reduced from 20
+          const SizedBox(height: 8),
+          Text(desc, textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)), // Reduced from 14
+        ],
+      ),
     );
   }
 
@@ -651,9 +732,9 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: _panel,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF2A3D61), width: 2),
+              color: Colors.white.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.06), width: 1.5),
             ),
             child: AnimatedBuilder(
               animation: _dotController,
@@ -731,72 +812,66 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     _focusCount = 5;
     return Column(
       children: [
-        const Text(
-          'EyeUnlock Dashboard',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 14),
+        _sectionHeader('Dashboard'),
+        const SizedBox(height: 16),
         Expanded(
           child: GridView.count(
-            physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 14,
-            childAspectRatio: 1.1,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.8, // Shorter cards to fit more content
             children: [
               _focusable(
                 index: 0,
                 child: _dashboardCard(
-                  Icons.chat_bubble_outline,
                   'Communicate',
-                  const Color(0xFF40C4FF),
+                  Icons.chat_bubble_outline_rounded,
+                  'Type with your eyes instantly.',
+                  _accentBlue,
                   () => _goTo(_EyePage.communicate),
                 ),
               ),
               _focusable(
                 index: 1,
                 child: _dashboardCard(
-                  Icons.menu_book_outlined,
                   'Learn',
-                  const Color(0xFF80CBC4),
+                  Icons.auto_stories_rounded,
+                  'Educational resources and guides.',
+                  _success,
                   () => _goTo(_EyePage.learn),
                 ),
               ),
               _focusable(
                 index: 2,
                 child: _dashboardCard(
-                  Icons.sports_esports_outlined,
                   'Games',
-                  const Color(0xFFFFCC80),
-                  () => _goTo(_EyePage.games),
+                  Icons.sports_esports_rounded,
+                  'Engaging eye-training games.',
+                  const Color(0xFFF97316),
+                  () => _goTo(_EyePage.gamesMenu),
                 ),
               ),
               _focusable(
                 index: 3,
                 child: _dashboardCard(
-                  Icons.settings_remote_outlined,
                   'Smart Control',
-                  const Color(0xFFCE93D8),
+                  Icons.sensors_rounded,
+                  'Control your environment easily.',
+                  const Color(0xFF8B5CF6),
                   () => _goTo(_EyePage.smart),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          child: _focusable(
-            index: 4,
-            child: _largeButton(
-              label: 'Recalibrate Tracker',
-              color: const Color(0xFF2B3F61),
-              onTap: () => _goTo(_EyePage.calibration),
-            ),
+        const SizedBox(height: 16),
+        _focusable(
+          index: 4,
+          child: _largeButton(
+            label: 'Recalibrate Tracker',
+            color: Colors.white.withOpacity(0.08),
+            textColor: Colors.white,
+            onTap: () => _goTo(_EyePage.calibration),
           ),
         ),
       ],
@@ -820,22 +895,26 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _panel,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF2A3D61)),
+                  color: Colors.white.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withOpacity(0.08)),
                 ),
                 child: Text(
                   _typedText.isEmpty
-                      ? 'Typed text appears here...'
+                      ? 'Gaze to start typing...'
                       : _typedText,
-                  style: const TextStyle(color: Colors.white, fontSize: 22),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(_typedText.isEmpty ? 0.3 : 0.9),
+                    fontSize: 20, // Reduced from 24
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
             SizedBox(
-              height: 96,
-              width: 106,
+              height: 80, // Reduced from 96
+              width: 100, // Reduced from 106
               child: _focusable(
                 index: 29,
                 child: _largeButton(
@@ -933,27 +1012,34 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 140,
+          height: 120, // Reduced from 140
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _panel,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF2A3D61)),
+              color: Colors.white.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.06)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Quick Phrases',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome_rounded, color: _accent, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'QUICK PHRASES',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Expanded(
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
@@ -961,12 +1047,12 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
                     separatorBuilder: (_, _) => const SizedBox(width: 8),
                     itemBuilder: (context, i) {
                       return SizedBox(
-                        width: 182,
+                        width: 160, // Reduced from 190
                         child: _focusable(
                           index: 30 + i,
                           child: _largeButton(
                             label: _quickPhrases[i],
-                            color: const Color(0xFF2B3F61),
+                            color: Colors.white.withOpacity(0.08),
                             onTap: () {
                               setState(() => _typedText = _quickPhrases[i]);
                               unawaited(
@@ -1108,62 +1194,96 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
 
 
   Widget _sectionHeader(String title) {
-    return Row(
-      children: [
-        IconButton(
-          onPressed: () => _goTo(_EyePage.dashboard),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
+    return Container(
+      height: 64, // Reduced from 80
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.bolt_rounded, color: _accent, size: 24), // Reduced from 28
+          const SizedBox(width: 10),
+          Text(
+            'NEUROLINK',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12, // Reduced from 14
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
             ),
           ),
-        ),
-        const SizedBox(width: 40),
-      ],
+          const Spacer(),
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.4),
+              fontSize: 11, // Reduced from 12
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (_page != _EyePage.dashboard)
+            _focusable(
+              index: _focusCount - 1,
+              child: InkWell(
+                onTap: () => _goTo(_EyePage.dashboard),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: _accent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.home_rounded, color: _accent, size: 18), // Reduced from 20
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _dashboardCard(
-    IconData icon,
-    String label,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Ink(
-        decoration: BoxDecoration(
-          color: _panel,
+  Widget _dashboardCard(String title, IconData icon, String desc, Color color, VoidCallback onTap) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(20), // Slightly sharper corners for compact
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF2A3D61), width: 2),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: color),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 21,
-                fontWeight: FontWeight.w700,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.all(20), // Reduced from 32
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10), // Reduced from 12
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 28, color: color), // Reduced from 36
+                ),
+                const Spacer(),
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800), // Reduced from 24
+                ),
+                const SizedBox(height: 6), // Reduced from 8
+                Text(
+                  desc,
+                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12, height: 1.3), // Reduced from 14
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -1176,7 +1296,7 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: _panel,
+        color: _surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF2A3D61)),
       ),
@@ -1205,17 +1325,18 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
       child: ElevatedButton(
         onPressed: onTap ?? () => setState(() => _typedText += label),
         style: ElevatedButton.styleFrom(
-          backgroundColor: _panel,
+          backgroundColor: Colors.white.withOpacity(0.03),
           foregroundColor: Colors.white,
+          elevation: 0,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: Color(0xFF2A3D61), width: 1.4),
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.white.withOpacity(0.08), width: 1.2),
           ),
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -1224,24 +1345,22 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
   Widget _largeButton({
     required String label,
     required Color color,
-    required VoidCallback onTap,
     Color textColor = Colors.white,
+    required VoidCallback onTap,
   }) {
     return SizedBox(
       height: 64,
+      width: double.infinity,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: textColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-        ),
+        child: Text(label),
       ),
     );
   }
@@ -1280,30 +1399,45 @@ class _EyeUnlockScreenState extends State<EyeUnlockScreen>
     );
   }
 
+  Widget _buildCenteredWrapper(Widget child) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 880), // Reduced from 1000
+        child: child,
+      ),
+    );
+  }
+
   Widget _focusable({required int index, required Widget child}) {
     final key = _focusKeys.putIfAbsent(index, () => GlobalKey());
     final focused = _focusIndex == index;
-    return AnimatedContainer(
-      key: key,
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.easeOut,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: focused
-            ? Border.all(color: _accent, width: 3.5)
-            : Border.all(color: Colors.transparent, width: 3.5),
-        boxShadow: focused
-            ? [
-                BoxShadow(
-                  color: _accent.withValues(alpha: 0.25),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                )
-              ]
-            : [],
+    return AnimatedScale(
+      scale: focused ? 1.03 : 1.0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutBack,
+      child: AnimatedContainer(
+        key: key,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: focused ? _accent : Colors.white.withOpacity(0.08),
+            width: focused ? 3.5 : 1.5,
+          ),
+          boxShadow: focused
+              ? [
+                  BoxShadow(
+                    color: _accent.withOpacity(0.2),
+                    blurRadius: 25,
+                    spreadRadius: 2,
+                  )
+                ]
+              : [],
+        ),
+        padding: const EdgeInsets.all(2),
+        child: child,
       ),
-      padding: const EdgeInsets.all(2),
-      child: child,
     );
   }
 }
